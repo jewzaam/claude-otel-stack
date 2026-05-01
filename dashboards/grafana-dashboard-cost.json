@@ -13,11 +13,11 @@
       "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "color": { "mode": "palette-classic" } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
         "overrides": []
       },
       "targets": [
@@ -36,11 +36,11 @@
       "gridPos": { "x": 8, "y": 0, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "color": { "mode": "palette-classic" } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
         "overrides": []
       },
       "targets": [
@@ -59,11 +59,11 @@
       "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "color": { "mode": "palette-classic" } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
         "overrides": []
       },
       "targets": [
@@ -83,11 +83,11 @@
       "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "color": { "mode": "palette-classic" } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
         "overrides": []
       },
       "targets": [
@@ -113,6 +113,7 @@
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
+          "decimals": 2,
           "color": { "mode": "fixed", "fixedColor": "orange" }
         },
         "overrides": []
@@ -133,7 +134,7 @@
       "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "custom": { "fillOpacity": 10 } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "custom": { "fillOpacity": 10 } },
         "overrides": []
       },
       "targets": [
@@ -151,7 +152,7 @@
       "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "fieldConfig": {
-        "defaults": { "unit": "currencyUSD", "custom": { "fillOpacity": 10 } },
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "custom": { "fillOpacity": 10 } },
         "overrides": []
       },
       "targets": [
@@ -169,7 +170,7 @@
       "gridPos": { "x": 0, "y": 24, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
@@ -192,7 +193,7 @@
       "gridPos": { "x": 8, "y": 24, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
@@ -216,7 +217,7 @@
       "gridPos": { "x": 16, "y": 24, "w": 8, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
@@ -261,7 +262,7 @@
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "fieldConfig": {
         "defaults": {
-          "unit": "percentunit", "min": 0, "max": 1,
+          "unit": "percentunit", "decimals": 0, "min": 0, "max": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -307,7 +308,7 @@
       "gridPos": { "x": 0, "y": 40, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
@@ -330,7 +331,7 @@
       "gridPos": { "x": 12, "y": 40, "w": 12, "h": 8 },
       "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
       "options": {
-        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
         "pieType": "donut"
       },
       "fieldConfig": {
