@@ -1,0 +1,530 @@
+{
+  "title": "Claude Code — Event Analytics",
+  "uid": "claude-events",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "title": "Event Volume Over Time",
+      "description": "Event rate by type — shows activity bursts and idle periods",
+      "type": "timeseries",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 16, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 30,
+            "stacking": { "mode": "normal", "group": "A" },
+            "lineWidth": 1
+          }
+        },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "{event_name=\"api_request\"}" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }, { "id": "displayName", "value": "API requests" }] },
+          { "matcher": { "id": "byName", "options": "{event_name=\"tool_result\"}" }, "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }, { "id": "displayName", "value": "Tool calls" }] },
+          { "matcher": { "id": "byName", "options": "{event_name=\"user_prompt\"}" }, "properties": [{ "id": "color", "value": { "fixedColor": "green", "mode": "fixed" } }, { "id": "displayName", "value": "Prompts" }] }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" [1m]))",
+          "legendFormat": "API requests",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" [1m]))",
+          "legendFormat": "Tool calls",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" [1m]))",
+          "legendFormat": "Prompts",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"hook_execution_complete\" [1m]))",
+          "legendFormat": "Hooks",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "title": "Event Breakdown (all time)",
+      "description": "Proportion of event types over selected range",
+      "type": "piechart",
+      "id": 2,
+      "gridPos": { "x": 16, "y": 0, "w": 8, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" [$__range]))",
+          "legendFormat": "API requests",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" [$__range]))",
+          "legendFormat": "Tool calls",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" [$__range]))",
+          "legendFormat": "Prompts",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"hook_execution_complete\" [$__range]))",
+          "legendFormat": "Hooks",
+          "refId": "D"
+        }
+      ]
+    },
+    {
+      "title": "Cost (USD) — cumulative per session",
+      "description": "Total spend per session over time (from Prometheus metrics)",
+      "type": "timeseries",
+      "id": 3,
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": { "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_cost_usage_USD_total) by (session_id)",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cost Rate (USD/min)",
+      "description": "Burn rate — how fast you're spending",
+      "type": "timeseries",
+      "id": 4,
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": { "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(claude_code_cost_usage_USD_total[2m])) by (session_id) * 60",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tool Call Rate Over Time",
+      "description": "Tool calls per minute by tool name",
+      "type": "timeseries",
+      "id": 5,
+      "gridPos": { "x": 0, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 20,
+            "stacking": { "mode": "normal", "group": "A" }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name!=\"\" [1m]))",
+          "legendFormat": "{{tool_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tool Usage Frequency (total)",
+      "description": "Which tools are called most over the selected range",
+      "type": "piechart",
+      "id": 6,
+      "gridPos": { "x": 12, "y": 16, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name!=\"\" [$__range]))",
+          "legendFormat": "{{tool_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tokens — by type",
+      "description": "Token consumption: input, output, cacheRead, cacheCreation",
+      "type": "timeseries",
+      "id": 7,
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 20,
+            "stacking": { "mode": "normal", "group": "A" }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_token_usage_tokens_total) by (type)",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cache Hit Ratio",
+      "description": "What % of tokens are cache reads — green = caching is working",
+      "type": "gauge",
+      "id": 8,
+      "gridPos": { "x": 12, "y": 24, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.3 },
+              { "color": "green", "value": 0.6 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) / (sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) + sum(claude_code_token_usage_tokens_total{type=\"input\"}) + 1)",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Active Time",
+      "description": "CLI processing vs user interaction time",
+      "type": "stat",
+      "id": 9,
+      "gridPos": { "x": 18, "y": 24, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_active_time_seconds_total) by (type)",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tool Failures",
+      "description": "Failed tool executions",
+      "type": "logs",
+      "id": 10,
+      "gridPos": { "x": 0, "y": 32, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=\"tool_result\" | success=\"false\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Recent Events Stream",
+      "description": "Live event stream — all prompts, tools, API calls",
+      "type": "logs",
+      "id": 11,
+      "gridPos": { "x": 12, "y": 32, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=~\"api_request|tool_result|user_prompt\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cumulative Cost by Day (USD)",
+      "description": "Daily spend — like AgentPulse's daily summary",
+      "type": "barchart",
+      "id": 12,
+      "gridPos": { "x": 0, "y": 40, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "orientation": "vertical",
+        "showValue": "always",
+        "barWidth": 0.6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": { "mode": "fixed", "fixedColor": "orange" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_cost_usage_USD_total[1d]))",
+          "legendFormat": "Daily cost",
+          "refId": "A",
+          "interval": "1d"
+        }
+      ]
+    },
+    {
+      "title": "Cost by Session",
+      "description": "Total spend per session — which sessions are expensive?",
+      "type": "piechart",
+      "id": 13,
+      "gridPos": { "x": 0, "y": 48, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (session_id) (claude_code_cost_usage_USD_total)",
+          "legendFormat": "{{session_id}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Cost by Model",
+      "description": "Spend split by model — opus vs sonnet vs haiku",
+      "type": "piechart",
+      "id": 14,
+      "gridPos": { "x": 8, "y": 48, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (model) (claude_code_cost_usage_USD_total)",
+          "legendFormat": "{{model}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Cost by Source (main vs subagent)",
+      "description": "How much are subagents costing vs the main thread?",
+      "type": "piechart",
+      "id": 15,
+      "gridPos": { "x": 16, "y": 48, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (query_source) (claude_code_cost_usage_USD_total)",
+          "legendFormat": "{{query_source}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Tokens by Session",
+      "description": "Token consumption per session",
+      "type": "piechart",
+      "id": 16,
+      "gridPos": { "x": 0, "y": 56, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (session_id) (claude_code_token_usage_tokens_total)",
+          "legendFormat": "{{session_id}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Tokens by Type and Model",
+      "description": "input/output/cache breakdown per model",
+      "type": "piechart",
+      "id": 17,
+      "gridPos": { "x": 8, "y": 56, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (type, model) (claude_code_token_usage_tokens_total)",
+          "legendFormat": "{{type}} ({{model}})",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Lines of Code Modified",
+      "description": "Lines added vs removed",
+      "type": "stat",
+      "id": 18,
+      "gridPos": { "x": 16, "y": 56, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (type) (claude_code_lines_of_code_count_total)",
+          "legendFormat": "{{type}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Cost by Project",
+      "description": "Spend per project — requires sessions launched with updated claude-otel.env",
+      "type": "piechart",
+      "id": 19,
+      "gridPos": { "x": 0, "y": 64, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (project) (claude_code_cost_usage_USD_total)",
+          "legendFormat": "{{project}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "title": "Tokens by Project",
+      "description": "Token consumption per project — requires sessions launched with updated claude-otel.env",
+      "type": "piechart",
+      "id": 20,
+      "gridPos": { "x": 12, "y": 64, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (project) (claude_code_token_usage_tokens_total)",
+          "legendFormat": "{{project}}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39
+}

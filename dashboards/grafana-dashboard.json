@@ -1,0 +1,151 @@
+{
+  "title": "Claude Code — Session Monitor",
+  "uid": "claude-code-monitor",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "title": "Cost (USD) — cumulative",
+      "type": "timeseries",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": { "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_cost_usage_USD_total) by (session_id)",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cost Rate (USD/min)",
+      "type": "timeseries",
+      "id": 2,
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "currencyUSD",
+          "custom": { "fillOpacity": 10 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(claude_code_cost_usage_USD_total[2m])) by (session_id) * 60",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tokens — by type",
+      "type": "timeseries",
+      "id": 3,
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "fillOpacity": 20,
+            "stacking": { "mode": "normal", "group": "A" }
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_token_usage_tokens_total) by (type)",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cache Hit Ratio",
+      "type": "gauge",
+      "id": 4,
+      "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.3 },
+              { "color": "green", "value": 0.6 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) / (sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) + sum(claude_code_token_usage_tokens_total{type=\"input\"}) + 1)",
+          "legendFormat": "cache hit ratio",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Active Time",
+      "type": "stat",
+      "id": 5,
+      "gridPos": { "x": 18, "y": 8, "w": 6, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(claude_code_active_time_seconds_total) by (type)",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Events — tools, API requests, prompts",
+      "type": "logs",
+      "id": 6,
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\", event_name=~\"tool_result|api_request|user_prompt\"}",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39
+}
