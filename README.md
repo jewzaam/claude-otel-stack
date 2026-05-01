@@ -8,7 +8,8 @@ Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-
 
 ## Prerequisites
 
-- `podman` and `podman-compose` (`python -m pip install podman-compose`)
+- `podman`
+- `podman-compose` — install with `python -m pip install podman-compose`
 
 ## Setup
 
@@ -30,9 +31,9 @@ The wrapper sets OTEL env vars and injects `project=$(pwd)` at launch time, so e
 ## Autostart (optional)
 
 ```bash
-cp bin/otel-claude.service ~/.config/systemd/user/
+cp bin/claude-otel-stack.service ~/.config/systemd/user/
 systemctl --user daemon-reload
-systemctl --user enable --now otel-claude
+systemctl --user enable --now claude-otel-stack
 ```
 
 ## Grafana

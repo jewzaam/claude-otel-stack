@@ -22,7 +22,7 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | `docker-compose.yml` | All 5 services with `:z` SELinux bind mounts |
 | `bin/claude-wrapper.sh` | Wrapper script — sources claude.env, execs claude with passthrough args |
 | `bin/claude.env` | OTEL env vars including dynamic `project=$(pwd)` |
-| `bin/otel-claude.service` | systemd user unit for autostart |
+| `bin/claude-otel-stack.service` | systemd user unit for autostart |
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
 | `config/prometheus.yml` | Scrape config for collector's prometheus exporter on `:8889` |
 | `config/tempo.yaml` | Tempo trace storage (local backend) |
