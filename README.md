@@ -6,6 +6,35 @@ Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-
 
 **Repo:** https://github.com/jewzaam/claude-otel-stack
 
+## How it Works
+
+A shell wrapper injects OTEL environment variables before launching Claude Code. Telemetry flows over OTLP gRPC to a local collector, which fans out to three backends. Grafana queries all three for unified dashboards.
+
+```mermaid
+flowchart LR
+    CC["Claude Code"]
+    W["claude-wrapper.sh<br/><i>injects OTEL env vars</i>"]
+    OC["OTEL Collector<br/>:4317"]
+    P["Prometheus<br/><i>metrics</i>"]
+    L["Loki<br/><i>events / logs</i>"]
+    T["Tempo<br/><i>traces</i>"]
+    G["Grafana<br/>:3000"]
+
+    W -- sources env --> CC
+    CC -- "OTLP gRPC<br/>localhost:4317" --> OC
+    OC --> P
+    OC --> L
+    OC --> T
+    P --> G
+    L --> G
+    T --> G
+
+    style CC fill:#6366f1,color:#fff
+    style OC fill:#f59e0b,color:#000
+    style G fill:#10b981,color:#fff
+```
+
+
 ## Prerequisites
 
 ### podman
