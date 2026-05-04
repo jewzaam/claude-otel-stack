@@ -5,7 +5,7 @@ services:
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:z
     ports:
-      - "4317:4317"
+      - "127.0.0.1:4317:4317"
       - "8889:8889"
     depends_on:
       - loki

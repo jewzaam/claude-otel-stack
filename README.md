@@ -8,8 +8,21 @@ Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-
 
 ## Prerequisites
 
-- `podman`
-- `podman-compose` — install with `python -m pip install podman-compose`
+### podman
+
+https://podman.io/docs/installation
+
+```bash
+sudo dnf install podman
+
+systemctl --user enable --now podman.socket
+```
+
+### podman-compose
+
+```bash
+python -m pip install podman-compose
+```
 
 ## Setup
 
@@ -31,7 +44,7 @@ The wrapper sets OTEL env vars and injects `project=$(pwd)` at launch time, so e
 ## Autostart (optional)
 
 ```bash
-cp bin/claude-otel-stack.service ~/.config/systemd/user/
+cp systemd/claude-otel-stack.service ~/.config/systemd/user/
 systemctl --user daemon-reload
 systemctl --user enable --now claude-otel-stack
 ```
@@ -42,6 +55,7 @@ http://localhost:3000 — no login required.
 
 Import dashboards from `dashboards/`:
 - `grafana-dashboard.json` — Session Monitor (cost, tokens, cache ratio, active time)
+- `grafana-dashboard-cost.json` — Cost & Token Breakdown (cost by session/model/project, token usage, cache hit ratio, edit decisions)
 - `grafana-dashboard-events.json` — Event Analytics (event rates, tool usage, breakdowns by session/model/project)
 
 Import: Dashboards → New → Import → Upload JSON file.
