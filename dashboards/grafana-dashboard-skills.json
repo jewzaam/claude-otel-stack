@@ -1,0 +1,195 @@
+{
+  "title": "Claude Code — Skill Usage",
+  "uid": "claude-skills",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-24h", "to": "now" },
+  "templating": { "list": [] },
+  "panels": [
+    {
+      "title": "Slash Commands by Name",
+      "type": "piechart",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" [$__range]))",
+          "legendFormat": "/{{command_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Skill Tool Calls by Name",
+      "type": "piechart",
+      "id": 2,
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" [$__range]))",
+          "legendFormat": "{{tool_parameters}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Slash Commands by Session",
+      "type": "piechart",
+      "id": 3,
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (session_id) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" [$__range]))",
+          "legendFormat": "{{session_id}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Skill Decisions (accept vs reject)",
+      "type": "piechart",
+      "id": 4,
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (decision) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | tool_name=\"Skill\" [$__range]))",
+          "legendFormat": "{{decision}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Skill Activity Over Time",
+      "type": "timeseries",
+      "id": 5,
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "fillOpacity": 20, "stacking": { "mode": "normal", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" [5m]))",
+          "legendFormat": "/{{command_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" [5m]))",
+          "legendFormat": "{{tool_parameters}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "Slash Commands (older sessions)",
+      "description": "Catches /commands from sessions running Claude Code < 2.1.126 where command_name field is not emitted",
+      "type": "piechart",
+      "id": 6,
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (prompt) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_name=\"\" | prompt=~\"\\\\[.*\\\\] /.*\" [$__range]))",
+          "legendFormat": "{{prompt}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Skill Invocations by Project",
+      "type": "piechart",
+      "id": 7,
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (project) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" [$__range]))",
+          "legendFormat": "{{project}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Recent Skill Events",
+      "type": "logs",
+      "id": 8,
+      "gridPos": { "x": 0, "y": 32, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\"",
+          "refId": "A"
+        },
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\"",
+          "refId": "B"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39
+}
