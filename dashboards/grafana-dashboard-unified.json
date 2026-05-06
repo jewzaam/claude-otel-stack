@@ -54,7 +54,7 @@
       ]
     },
     {
-      "title": "Total Tokens",
+      "title": "Total Tokens (Normalized)",
       "type": "stat",
       "id": 2,
       "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
@@ -66,7 +66,7 @@
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
+          "expr": "2 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheCreation\"}[$__range])) + 0.1 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheRead\"}[$__range])) + 1 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"input\"}[$__range])) + 5 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"output\"}[$__range]))",
           "refId": "A"
         }
       ]
