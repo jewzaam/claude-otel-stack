@@ -82,15 +82,15 @@ systemctl --user enable --now claude-otel-stack
 
 http://localhost:3000 — no login required.
 
-Import dashboards from `dashboards/`:
+Dashboards sync automatically — a sidecar container pushes JSON files to Grafana on startup and keeps them in sync bidirectionally. Edit a dashboard in the Grafana UI and the JSON file updates on disk. Edit the JSON file and Grafana picks up the change. No manual import needed.
+
+Available dashboards in `dashboards/`:
 - **`grafana-dashboard-unified.json`** — Unified (recommended daily driver — cost, tokens, skills, tools, traces, prompt history, API requests; filterable by project and session)
 - `grafana-dashboard.json` — Session Monitor (cost, tokens, cache ratio, active time)
 - `grafana-dashboard-cost.json` — Cost & Token Breakdown (cost by session/model/project, token usage, cache hit ratio, edit decisions)
 - `grafana-dashboard-events.json` — Event Analytics (event rates, tool usage, breakdowns by session/model/project)
 - `grafana-dashboard-skills.json` — Skill Usage (slash commands, Skill tool calls, decisions, activity over time)
 - `grafana-dashboard-session.json` — Session Detail (drill into a single session — cost, tokens, traces, prompt history, API requests; filterable by project)
-
-Import: Dashboards → New → Import → Upload JSON file.
 
 ## Ports
 
