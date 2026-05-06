@@ -1,0 +1,398 @@
+{
+  "title": "Claude Code — Session Detail",
+  "uid": "claude-session",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "session_id",
+        "label": "Session ID",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(claude_code_cost_usage_USD_total, session_id)",
+        "refresh": 2,
+        "sort": 2,
+        "includeAll": false,
+        "multi": false,
+        "current": {}
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Total Cost",
+      "type": "stat",
+      "id": 1,
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 2 },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_cost_usage_USD_total{session_id=\"$session_id\"}[$__range]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Total Tokens",
+      "type": "stat",
+      "id": 2,
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{session_id=\"$session_id\"}[$__range]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Active Time",
+      "type": "stat",
+      "id": 3,
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "s", "decimals": 0 },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=\"$session_id\"}[$__range]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cache Hit Ratio",
+      "type": "gauge",
+      "id": 4,
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit", "decimals": 0, "min": 0, "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "yellow", "value": 0.3 },
+              { "color": "green", "value": 0.6 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(claude_code_token_usage_tokens_total{session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) / (sum(increase(claude_code_token_usage_tokens_total{session_id=\"$session_id\", type=\"cacheRead\"}[$__range])) + sum(increase(claude_code_token_usage_tokens_total{session_id=\"$session_id\", type=\"input\"}[$__range])) + 1)",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Lines Changed",
+      "type": "stat",
+      "id": 5,
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=\"$session_id\"}[$__range]))",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "API Calls",
+      "type": "stat",
+      "id": 6,
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "decimals": 0 },
+        "overrides": []
+      },
+      "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=\"$session_id\" [$__range]))",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cost Over Time",
+      "type": "timeseries",
+      "id": 7,
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "custom": { "fillOpacity": 10 } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (model) (claude_code_cost_usage_USD_total{session_id=\"$session_id\"})",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Token Usage Over Time",
+      "type": "timeseries",
+      "id": 8,
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 20, "stacking": { "mode": "normal", "group": "A" } }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (type) (claude_code_token_usage_tokens_total{session_id=\"$session_id\"})",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cost by Model",
+      "type": "piechart",
+      "id": 9,
+      "gridPos": { "x": 0, "y": 12, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total{session_id=\"$session_id\"}[$__range]))",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Cost by Source (main vs subagent)",
+      "type": "piechart",
+      "id": 10,
+      "gridPos": { "x": 8, "y": 12, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 2, "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{session_id=\"$session_id\"}[$__range]))",
+          "legendFormat": "{{query_source}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tokens by Type",
+      "type": "piechart",
+      "id": 11,
+      "gridPos": { "x": 16, "y": 12, "w": 8, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "unit": "short", "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (type) (increase(claude_code_token_usage_tokens_total{session_id=\"$session_id\"}[$__range]))",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Skills Executed",
+      "type": "piechart",
+      "id": 12,
+      "gridPos": { "x": 0, "y": 20, "w": 8, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=\"$session_id\" | command_source=\"custom\" [$__range]))",
+          "legendFormat": "/{{command_name}}",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=\"$session_id\" | tool_name=\"Skill\" [$__range]))",
+          "legendFormat": "{{tool_parameters}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "title": "Tool Calls by Name",
+      "type": "piechart",
+      "id": 13,
+      "gridPos": { "x": 8, "y": 20, "w": 8, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=\"$session_id\" [$__range]))",
+          "legendFormat": "{{tool_name}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Tool Decisions (accept/reject)",
+      "type": "piechart",
+      "id": 14,
+      "gridPos": { "x": 16, "y": 20, "w": 8, "h": 8 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value"] },
+        "pieType": "donut"
+      },
+      "fieldConfig": {
+        "defaults": { "color": { "mode": "palette-classic" } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=\"$session_id\" [$__range]))",
+          "legendFormat": "{{decision}} ({{source}})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Interaction Traces",
+      "description": "Click a trace ID to open the full waterfall. Shows interaction → llm_request / tool → tool.blocked_on_user / tool.execution hierarchy.",
+      "type": "traces",
+      "id": 19,
+      "gridPos": { "x": 0, "y": 28, "w": 24, "h": 10 },
+      "datasource": { "type": "tempo", "uid": "P214B5B846CF3925F" },
+      "targets": [
+        {
+          "queryType": "traceql",
+          "query": "{span.`session.id`=\"$session_id\" && name=~\"claude_code.interaction\"}",
+          "refId": "A",
+          "limit": 50
+        }
+      ]
+    },
+    {
+      "title": "Cost per API Request",
+      "type": "timeseries",
+      "id": 16,
+      "gridPos": { "x": 0, "y": 38, "w": 24, "h": 8 },
+      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "fieldConfig": {
+        "defaults": { "unit": "currencyUSD", "decimals": 4, "custom": { "fillOpacity": 10 } },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(claude_code_cost_usage_USD_total{session_id=\"$session_id\"}[2m]) * 120",
+          "legendFormat": "{{model}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Prompt History",
+      "type": "logs",
+      "id": 17,
+      "gridPos": { "x": 0, "y": 46, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Ascending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=\"$session_id\" | line_format \"{{.prompt}}\"",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "API Requests",
+      "type": "logs",
+      "id": 18,
+      "gridPos": { "x": 0, "y": 56, "w": 24, "h": 10 },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Ascending"
+      },
+      "targets": [
+        {
+          "expr": "{service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=\"$session_id\" | line_format \"model={{.model}} cost=${{.cost_usd}} duration={{.duration_ms}}ms tokens: in={{.input_tokens}} out={{.output_tokens}} cache_read={{.cache_read_tokens}} source={{.query_source}}\"",
+          "refId": "A"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 39
+}
