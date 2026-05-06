@@ -7,11 +7,24 @@
   "templating": {
     "list": [
       {
+        "name": "project",
+        "label": "Project (cwd)",
+        "type": "query",
+        "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+        "query": "label_values(claude_code_cost_usage_USD_total, project)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": { "text": "All", "value": "$__all" }
+      },
+      {
         "name": "session_id",
         "label": "Session ID",
         "type": "query",
         "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-        "query": "label_values(claude_code_cost_usage_USD_total, session_id)",
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\"}, session_id)",
         "refresh": 2,
         "sort": 2,
         "includeAll": false,

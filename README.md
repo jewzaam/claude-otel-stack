@@ -86,6 +86,8 @@ Import dashboards from `dashboards/`:
 - `grafana-dashboard.json` — Session Monitor (cost, tokens, cache ratio, active time)
 - `grafana-dashboard-cost.json` — Cost & Token Breakdown (cost by session/model/project, token usage, cache hit ratio, edit decisions)
 - `grafana-dashboard-events.json` — Event Analytics (event rates, tool usage, breakdowns by session/model/project)
+- `grafana-dashboard-skills.json` — Skill Usage (slash commands, Skill tool calls, decisions, activity over time)
+- `grafana-dashboard-session.json` — Session Detail (drill into a single session — cost, tokens, traces, prompt history, API requests; filterable by project)
 
 Import: Dashboards → New → Import → Upload JSON file.
 
