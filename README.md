@@ -83,6 +83,7 @@ systemctl --user enable --now claude-otel-stack
 http://localhost:3000 — no login required.
 
 Import dashboards from `dashboards/`:
+- **`grafana-dashboard-unified.json`** — Unified (recommended daily driver — cost, tokens, skills, tools, traces, prompt history, API requests; filterable by project and session)
 - `grafana-dashboard.json` — Session Monitor (cost, tokens, cache ratio, active time)
 - `grafana-dashboard-cost.json` — Cost & Token Breakdown (cost by session/model/project, token usage, cache hit ratio, edit decisions)
 - `grafana-dashboard-events.json` — Event Analytics (event rates, tool usage, breakdowns by session/model/project)
