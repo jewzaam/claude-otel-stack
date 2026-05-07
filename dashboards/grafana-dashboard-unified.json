@@ -1485,7 +1485,7 @@
           },
           "limit": 50,
           "metricsQueryType": "range",
-          "query": "{span.session.id=~\"$session_id\" && name=~\"claude_code.interaction\"}",
+          "query": "{span.session.id=~\"$session_id\" && resource.project=~\"$project\" && name=~\"claude_code.interaction\"}",
           "queryType": "traceql",
           "refId": "A",
           "serviceMapUseNativeHistograms": false,

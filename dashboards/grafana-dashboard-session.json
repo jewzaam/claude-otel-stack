@@ -339,7 +339,7 @@
       "targets": [
         {
           "queryType": "traceql",
-          "query": "{span.session.id=\"$session_id\" && name=~\"claude_code.interaction\"}",
+          "query": "{span.session.id=~\"$session_id\" && resource.project=~\"$project\" && name=~\"claude_code.interaction\"}",
           "refId": "A",
           "limit": 50
         }
