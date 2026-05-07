@@ -111,5 +111,6 @@ podman-compose down -v    # deletes all stored data
 
 ## Docs
 
+- [Claude Code Monitoring](https://docs.anthropic.com/en/docs/claude-code/monitoring-usage) — upstream Anthropic docs on OTEL env vars, metrics, events, and traces
 - `docs/tips.md` — gotchas and query patterns (SELinux, Loki structured metadata, LogQL)
 - `docs/thoughts.md` — design rationale, architecture options, what signals mean
