@@ -845,8 +845,8 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (project) (increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
-          "legendFormat": "{{project}}",
+          "expr": "sum by (project_clean) (label_replace(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]), \"project_clean\", \"$1\", \"project\", \"(.*?)/[^/]*worktree[^/]*/.*|(.+)\"))",
+          "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
       ],
