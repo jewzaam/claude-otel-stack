@@ -50,7 +50,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 2,
+        "w": 4,
         "x": 0,
         "y": 0
       },
@@ -79,11 +79,21 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "count(count by (session_id) (claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}))",
+          "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[5m]) > 0))",
+          "legendFormat": "active",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range])))",
+          "legendFormat": "total",
+          "refId": "B"
         }
       ],
-      "title": "Active Sessions",
+      "title": "Sessions",
       "type": "stat"
     },
     {
@@ -116,8 +126,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 2,
+        "w": 4,
+        "x": 4,
         "y": 0
       },
       "id": 1,
@@ -183,7 +193,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 5,
+        "x": 8,
         "y": 0
       },
       "id": 2,
@@ -266,7 +276,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 8,
+        "x": 11,
         "y": 0
       },
       "id": 5,
@@ -897,7 +907,7 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
+            "mode": "continuous-GrYlRd"
           },
           "custom": {
             "axisBorderShow": false,
@@ -909,14 +919,17 @@
             "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
-            "gradientMode": "none",
+            "gradientMode": "scheme",
             "hideFrom": {
               "legend": false,
               "tooltip": false,
               "viz": false
             },
-            "insertNulls": false,
+            "insertNulls": 3600000,
             "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -933,16 +946,13 @@
               "mode": "off"
             }
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           }
@@ -979,12 +989,13 @@
             "type": "tempo",
             "uid": "P214B5B846CF3925F"
           },
-          "limit": 50,
+          "limit": 5000,
           "metricsQueryType": "range",
           "query": "{span.session.id=~\"$session_id\" && resource.project=~\"$project\" && name=~\"claude_code.interaction\"}",
           "queryType": "traceql",
           "refId": "A",
           "serviceMapUseNativeHistograms": false,
+          "spss": 3,
           "tableType": "traces"
         }
       ],
