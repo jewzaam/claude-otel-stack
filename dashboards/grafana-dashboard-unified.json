@@ -549,7 +549,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
+        "w": 7,
         "x": 0,
         "y": 4
       },
@@ -585,7 +585,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (project_clean) (label_replace(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]), \"project_clean\", \"$1\", \"project\", \"(.*?)/[^/]*worktree[^/]*/.*|(.+)\"))",
+          "expr": "sum by (project_clean) (label_replace(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
           "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
@@ -616,8 +616,8 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 7,
         "y": 4
       },
       "id": 12,
