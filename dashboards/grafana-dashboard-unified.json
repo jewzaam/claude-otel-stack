@@ -239,7 +239,6 @@
             "fixedColor": "green",
             "mode": "fixed"
           },
-          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
