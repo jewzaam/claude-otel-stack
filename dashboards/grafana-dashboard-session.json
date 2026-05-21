@@ -129,7 +129,7 @@
       "options": { "colorMode": "value", "graphMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } },
       "targets": [
         {
-          "expr": "sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\"}[$__range]))",
+          "expr": "round(sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\"}[$__range])))",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
