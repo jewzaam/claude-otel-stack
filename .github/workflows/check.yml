@@ -24,13 +24,12 @@ jobs:
         run: make test-lint-python
 
       - name: Install shellcheck
-        run: sudo apt-get install -y shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
 
       - name: Lint shell scripts
         run: make test-lint-shell
-
-      - name: Install podman-compose
-        run: pip install podman-compose
 
       - name: Validate docker-compose.yml
         run: make test-lint-compose

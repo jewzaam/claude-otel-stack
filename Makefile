@@ -3,7 +3,10 @@
 
 MAKEFLAGS += --no-print-directory
 
-.PHONY: all check test-lint-json test-lint-python test-lint-shell test-lint-compose help
+# Compose tool autodetect — prefer docker compose (universal in CI), fall back to podman-compose, then docker-compose
+COMPOSE := $(shell command -v docker > /dev/null 2>&1 && docker compose version > /dev/null 2>&1 && echo "docker compose" || command -v podman-compose 2>/dev/null || command -v docker-compose 2>/dev/null)
+
+.PHONY: all check test-lint-json test-lint-python test-lint-shell test-lint-compose local-up local-down local-restart local-logs help
 
 all: check
 
@@ -37,9 +40,25 @@ test-lint-shell:  ## Lint shell scripts with shellcheck
 	fi
 
 test-lint-compose:  ## Validate docker-compose.yml
-	@echo "==> Validating docker-compose.yml"
-	podman-compose config > /dev/null
-	@echo "OK"
+	@if [ -z "$(COMPOSE)" ]; then \
+		echo "==> SKIP: no compose tool found (install docker, podman-compose, or docker-compose)"; \
+	else \
+		echo "==> Validating docker-compose.yml using $(COMPOSE)"; \
+		$(COMPOSE) -f docker-compose.yml config > /dev/null && echo "OK"; \
+	fi
+
+local-up:  ## Start local Grafana on :3001 pointed at tailscale Prom/Loki/Tempo
+	podman-compose -f docker-compose.local.yml up -d
+	@echo "Grafana: http://localhost:3001"
+
+local-down:  ## Stop local Grafana (keeps volume)
+	podman-compose -f docker-compose.local.yml down
+
+local-restart:  ## Restart local Grafana stack
+	podman-compose -f docker-compose.local.yml restart
+
+local-logs:  ## Tail local Grafana + dashboard-sync logs
+	podman-compose -f docker-compose.local.yml logs -f
 
 help:  ## Show available targets
 	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'

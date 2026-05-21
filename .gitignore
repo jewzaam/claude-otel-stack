@@ -1,1 +1,5 @@
 __pycache__/
+
+# Local Grafana datasource config — contains personal endpoints (e.g. tailnet hostnames).
+# Copy from grafana-datasources.local.yaml.example and edit URLs.
+config/grafana-datasources.local.yaml

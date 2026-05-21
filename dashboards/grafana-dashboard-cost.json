@@ -22,8 +22,8 @@
   "panels": [
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -72,14 +72,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "label_replace(sum by (session_id) (increase(claude_code_cost_usage_USD_total[$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
           "instant": false,
           "legendFormat": "{{short_id}}",
           "refId": "A"
@@ -90,8 +90,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -140,14 +140,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (model) (increase(claude_code_cost_usage_USD_total[$__range]))",
+          "expr": "sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__range]))",
           "instant": false,
           "legendFormat": "{{model}}",
           "refId": "A"
@@ -158,8 +158,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -208,14 +208,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total[$__range]))",
+          "expr": "sum by (query_source) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__range]))",
           "instant": false,
           "legendFormat": "{{query_source}}",
           "refId": "A"
@@ -226,8 +226,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "description": "Requires sessions launched with updated claude-otel.env",
       "fieldConfig": {
@@ -277,14 +277,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project) (increase(claude_code_cost_usage_USD_total[$__range]))",
+          "expr": "sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__range]))",
           "instant": false,
           "legendFormat": "{{project}}",
           "refId": "A"
@@ -295,8 +295,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -345,6 +345,7 @@
         "y": 8
       },
       "id": 5,
+      "interval": "6h",
       "options": {
         "barRadius": 0,
         "barWidth": 0.6,
@@ -367,17 +368,19 @@
         "xTickLabelRotation": 0,
         "xTickLabelSpacing": 0
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(increase(claude_code_cost_usage_USD_total[1d]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1d]))",
           "interval": "1d",
           "legendFormat": "Daily cost",
+          "queryType": "range",
           "range": true,
           "refId": "A"
         }
@@ -388,8 +391,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -471,25 +474,25 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(claude_code_cost_usage_USD_total) by (session_id)",
+          "expr": "sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__rate_interval]))",
           "legendFormat": "{{session_id}}",
           "refId": "A"
         }
       ],
-      "title": "Cost Over Time (cumulative per session)",
+      "title": "Cost Over Time (per interval)",
       "type": "timeseries"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -571,14 +574,14 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(rate(claude_code_cost_usage_USD_total[2m])) by (session_id) * 60",
+          "expr": "sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1m]))",
           "legendFormat": "{{session_id}}",
           "refId": "A"
         }
@@ -588,13 +591,20 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
           },
           "unit": "short"
         }
@@ -610,20 +620,34 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
+          "showLegend": true,
           "values": [
             "value"
           ]
         },
-        "pieType": "donut"
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "label_replace(sum by (session_id) (increase(claude_code_token_usage_tokens_total[$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
           "instant": false,
           "legendFormat": "{{short_id}}",
           "refId": "A"
@@ -634,13 +658,20 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
           },
           "unit": "short"
         }
@@ -656,23 +687,63 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
+          "showLegend": true,
           "values": [
             "value"
           ]
         },
-        "pieType": "donut"
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (type) (increase(claude_code_token_usage_tokens_total[$__range]))",
-          "instant": false,
-          "legendFormat": "{{type}}",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__range]))",
+          "legendFormat": "input",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [$__range]))",
+          "legendFormat": "output",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range]))",
+          "legendFormat": "cacheRead",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range]))",
+          "legendFormat": "cacheCreation",
+          "refId": "D"
         }
       ],
       "title": "Tokens by Type",
@@ -680,14 +751,21 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "description": "Requires sessions launched with updated claude-otel.env",
       "fieldConfig": {
         "defaults": {
           "color": {
             "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
           },
           "unit": "short"
         }
@@ -703,20 +781,34 @@
         "legend": {
           "displayMode": "table",
           "placement": "right",
+          "showLegend": true,
           "values": [
             "value"
           ]
         },
-        "pieType": "donut"
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project) (increase(claude_code_token_usage_tokens_total[$__range]))",
+          "expr": "sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range]))",
           "instant": false,
           "legendFormat": "{{project}}",
           "refId": "A"
@@ -727,8 +819,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -754,12 +846,39 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (type) (increase(claude_code_token_usage_tokens_total[$__range]))",
-          "legendFormat": "{{type}}",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__rate_interval]))",
+          "legendFormat": "input",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [$__rate_interval]))",
+          "legendFormat": "output",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__rate_interval]))",
+          "legendFormat": "cacheRead",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [$__rate_interval]))",
+          "legendFormat": "cacheCreation",
+          "refId": "D"
         }
       ],
       "title": "Tokens Over Time (by type, stacked)",
@@ -767,8 +886,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -807,10 +926,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\"}[$__range])) / (sum(increase(claude_code_token_usage_tokens_total{type=\"cacheRead\"}[$__range])) + sum(increase(claude_code_token_usage_tokens_total{type=\"input\"}[$__range])) + 1)",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) / (sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__range])) + 1)",
           "instant": false,
           "refId": "A"
         }
