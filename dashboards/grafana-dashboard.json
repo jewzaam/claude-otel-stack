@@ -9,11 +9,11 @@
   },
   "panels": [
     {
-      "title": "Cost (USD) — cumulative",
+      "title": "Cost (USD) per interval",
       "type": "timeseries",
       "id": 1,
       "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
@@ -23,7 +23,8 @@
       },
       "targets": [
         {
-          "expr": "sum(claude_code_cost_usage_USD_total) by (session_id)",
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [$__rate_interval]))",
           "legendFormat": "{{session_id}}",
           "refId": "A"
         }
@@ -34,7 +35,7 @@
       "type": "timeseries",
       "id": 2,
       "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
       "fieldConfig": {
         "defaults": {
           "unit": "currencyUSD",
@@ -44,18 +45,19 @@
       },
       "targets": [
         {
-          "expr": "sum(rate(claude_code_cost_usage_USD_total[2m])) by (session_id) * 60",
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1m]))",
           "legendFormat": "{{session_id}}",
           "refId": "A"
         }
       ]
     },
     {
-      "title": "Tokens — by type",
+      "title": "Tokens — by type (per interval)",
       "type": "timeseries",
       "id": 3,
       "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
       "fieldConfig": {
         "defaults": {
           "unit": "short",
@@ -68,9 +70,28 @@
       },
       "targets": [
         {
-          "expr": "sum(claude_code_token_usage_tokens_total) by (type)",
-          "legendFormat": "{{type}}",
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__rate_interval]))",
+          "legendFormat": "input",
           "refId": "A"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [$__rate_interval]))",
+          "legendFormat": "output",
+          "refId": "B"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__rate_interval]))",
+          "legendFormat": "cacheRead",
+          "refId": "C"
+        },
+        {
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [$__rate_interval]))",
+          "legendFormat": "cacheCreation",
+          "refId": "D"
         }
       ]
     },
@@ -79,7 +100,7 @@
       "type": "gauge",
       "id": 4,
       "gridPos": { "x": 12, "y": 8, "w": 6, "h": 8 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
+      "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
       "fieldConfig": {
         "defaults": {
           "unit": "percentunit",
@@ -98,7 +119,8 @@
       },
       "targets": [
         {
-          "expr": "sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) / (sum(claude_code_token_usage_tokens_total{type=\"cacheRead\"}) + sum(claude_code_token_usage_tokens_total{type=\"input\"}) + 1)",
+          "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) / (sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [$__range])) + 1)",
           "legendFormat": "cache hit ratio",
           "refId": "A"
         }

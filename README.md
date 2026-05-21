@@ -92,6 +92,27 @@ Available dashboards in `dashboards/`:
 - `grafana-dashboard-skills.json` — Skill Usage (slash commands, Skill tool calls, decisions, activity over time)
 - `grafana-dashboard-session.json` — Session Detail (drill into a single session — cost, tokens, traces, prompt history, API requests; filterable by project)
 
+## Local Grafana (dashboard iteration against remote backends)
+
+For fast dashboard iteration without redeploying the full stack — useful when Prom/Loki/Tempo run elsewhere (k3s, tailnet, cloud) and only Grafana needs to run locally.
+
+```bash
+# 1. Create your personal datasource config (gitignored)
+cp config/grafana-datasources.local.yaml.example config/grafana-datasources.local.yaml
+
+# 2. Edit URLs in the new file to point at your Prom/Loki/Tempo endpoints
+
+# 3. Start
+make local-up        # http://localhost:3001
+make local-logs      # tail logs
+make local-restart   # restart
+make local-down      # stop (keeps volume)
+```
+
+Dashboards in `dashboards/` auto-push every 10s via the `dashboard-sync-local` sidecar. Edits in the UI write back to JSON. Datasource UIDs match the dashboard JSON, so panels resolve without remapping.
+
+The real `config/grafana-datasources.local.yaml` is gitignored — personal endpoints stay local.
+
 ## Ports
 
 | Service | Port |

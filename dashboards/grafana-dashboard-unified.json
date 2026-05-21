@@ -98,8 +98,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -152,10 +152,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range]))",
           "refId": "A"
         }
       ],
@@ -164,8 +164,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -218,10 +218,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "2 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheCreation\"}[$__range])) + 0.1 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheRead\"}[$__range])) + 1 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"input\"}[$__range])) + 5 * sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"output\"}[$__range]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap output_tokens [$__range]))",
           "refId": "A"
         }
       ],
@@ -380,8 +380,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -447,10 +447,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheRead\"}[$__range])) / (sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"cacheRead\"}[$__range])) + sum(increase(claude_code_token_usage_tokens_total{session_id=~\"$session_id\", project=~\"$project\", type=\"input\"}[$__range])) + 1)",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) / (sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap input_tokens [$__range])) + 1)",
           "refId": "A"
         }
       ],
@@ -528,8 +528,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -582,10 +582,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project_clean) (label_replace(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
+          "expr": "sum by (project_clean) (label_replace(sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
           "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
@@ -595,8 +595,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -649,11 +649,11 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "label_replace(sum by (session_id) (increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
           "legendFormat": "{{short_id}}",
           "range": true,
           "refId": "A"
@@ -664,8 +664,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -718,11 +718,11 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (model_short) (label_replace(increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
           "legendFormat": "{{model_short}}",
           "range": true,
           "refId": "A"
@@ -733,8 +733,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -787,10 +787,10 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (query_source) (increase(claude_code_cost_usage_USD_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
+          "expr": "sum by (query_source) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range]))",
           "legendFormat": "{{query_source}}",
           "refId": "A"
         }
