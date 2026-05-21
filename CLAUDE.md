@@ -38,7 +38,7 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **Prometheus for numbers** — cost, tokens, active time come as proper metrics. Use Prometheus for numeric aggregation, Loki for counting and filtering events.
 - **`:z` on all bind mounts** — required for rootless podman on SELinux (Fedora).
 - **`project` label** — set dynamically via `$(pwd)` in `claude-wrapper.sh` at launch time. Only available on sessions launched via the wrapper.
-- **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed.
+- **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed. Adding a new UID→filename mapping in `dashboard-sync.py` requires restarting the container (`podman-compose restart dashboard-sync`); existing dashboard edits sync without restart.
 - **`host.name=$(hostname)`** — added to `OTEL_RESOURCE_ATTRIBUTES` in `claude.env` for future multi-host aggregation.
 
 ## Query language gotchas
@@ -46,7 +46,11 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **TraceQL attribute prefixes** — resource attributes use `resource.` prefix (e.g., `resource.project`), span attributes use `span.` prefix (e.g., `span.session.id`). Do NOT backtick-quote dotted attribute names in Grafana — Tempo API accepts backticks but Grafana's TraceQL parser rejects them. Use `span.session.id` not `` span.`session.id` ``.
 - **`label_replace` regex alternation** — `(group1)|(group2)` only fills `$1` when group1 matches; if group2 matches, `$1` is empty. Use single capture group with `$` anchor instead. Example for worktree path stripping: `(.*?)(/[^/]*worktree[^/]*/.*|$)`.
 - **`count_over_time` on Loki** — returns one count per stream. Wrap with `sum()` for a single aggregate number in stat panels.
-- **`increase(metric[$__range])`** — works on historical data in Prometheus; series persist in storage past the staleness window. Only instant queries on raw counters miss expired series. Use `increase(...[$__range])` for stat panels covering the full dashboard time range.
+- **`increase(metric[$__range])`** — works on historical data in Prometheus; series persist in storage past the staleness window. Only instant queries on raw counters miss expired series. Use `increase(...[$__range])` for stat panels covering the full dashboard time range. `increase()` uses linear interpolation, producing float results even from integer counters — wrap with `round()` for panels where integer display is expected (e.g., lines of code).
+- **Avoid fixed `decimals` on stat panels using `short` unit** — Grafana's `short` unit auto-scales with SI suffixes (k, M, G). Setting `decimals: 0` truncates the scaled value (e.g., `1.2k` becomes `1k`). Omit the `decimals` field to let Grafana auto-format.
+- **Grafana expression queries for scalar math** — use `__expr__` datasource with `"type": "math"` for operations like `$A * 30` on Loki query results. Set `"hide": true` on intermediate Loki queries so only the expression result displays in stat panels.
+- **`query_source` field absent on older Claude Code** — versions before ~2.1.146 do not emit `query_source` in api_request events. These show as "Value" (empty label) in Grafana pie charts grouped by `query_source`. The `"sdk"` value indicates subagent API calls from newer versions.
+- **Model names differ between Prometheus and Loki** — Prometheus stores model names with version suffixes (e.g., `claude-opus-4-6[1m]`, `claude-sonnet-4-5@20250929`). Loki structured metadata stores shorter names (e.g., `claude-opus-4-6`, `claude-haiku-4-5-20251001`). Use Loki-style names when filtering Loki queries.
 
 ## Development notes
 
