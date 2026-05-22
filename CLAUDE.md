@@ -34,7 +34,9 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 
 ## Key constraints
 
-- **Loki structured metadata** — OTLP attributes are stored as structured metadata, NOT labels. Only `service_name` is a label. Filter with `| field="value"` after the stream selector, not inside `{}`. `unwrap` does not work on structured metadata fields. Structured metadata fields support `=~` regex match operator, enabling Grafana variable substitution with "All" option (substitutes `.*`).
+- **Loki structured metadata** — OTLP attributes are stored as structured metadata, NOT labels. Only `service_name` is a label. Filter with `| field="value"` after the stream selector, not inside `{}`. `unwrap` works on numeric structured metadata fields (e.g., `sum(sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [1h]))` verified against live Loki — older note in `docs/tips.md` claiming otherwise is wrong). Structured metadata fields support `=~` regex match operator, enabling Grafana variable substitution with "All" option (substitutes `.*`).
+- **Loki `label_values()` only returns true labels** — `service_name` plus any k8s-injected labels. Structured metadata (`session_id`, `project`, `command_name`, `prompt_id`) is NOT enumerable via Grafana variable query type 1. Use Prometheus `label_values(claude_code_cost_usage_USD_total, project)` for template variables, or hardcode allowed values. The Loki `/loki/api/v1/detected_field/{name}/values` endpoint returns structured-metadata values but Grafana's dashboard JSON variable format does not expose it cleanly.
+- **Prefer Loki for cost and token panels** — `increase(claude_code_cost_usage_USD_total[$__range])` produces oscillating values that mismatch Claude Code's statusline (sparse counter increments + extrapolation at series boundaries + ephemeral `session_id` label dimension). `sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [...])` is exact per-event sum with no extrapolation. Same applies to all 4 token types (`input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`).
 - **Prometheus for numbers** — cost, tokens, active time come as proper metrics. Use Prometheus for numeric aggregation, Loki for counting and filtering events.
 - **`:z` on all bind mounts** — required for rootless podman on SELinux (Fedora).
 - **`project` label** — set dynamically via `$(pwd)` in `claude-wrapper.sh` at launch time. Only available on sessions launched via the wrapper.
@@ -51,10 +53,33 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **Grafana expression queries for scalar math** — use `__expr__` datasource with `"type": "math"` for operations like `$A * 30` on Loki query results. Set `"hide": true` on intermediate Loki queries so only the expression result displays in stat panels.
 - **`query_source` field absent on older Claude Code** — versions before ~2.1.146 do not emit `query_source` in api_request events. These show as "Value" (empty label) in Grafana pie charts grouped by `query_source`. The `"sdk"` value indicates subagent API calls from newer versions.
 - **Model names differ between Prometheus and Loki** — Prometheus stores model names with version suffixes (e.g., `claude-opus-4-6[1m]`, `claude-sonnet-4-5@20250929`). Loki structured metadata stores shorter names (e.g., `claude-opus-4-6`, `claude-haiku-4-5-20251001`). Use Loki-style names when filtering Loki queries.
+- **Loki `or` unions range-vector results** — combine with `label_format` to add a discriminator label per branch. Pattern for unifying slash-command counts and Skill-tool counts in one query:
+  ```
+  sum by (prompt_id, invocation_name, source) (
+    count_over_time({...} | event_name="user_prompt" | command_source="custom" | label_format invocation_name=`/{{.command_name}}`,source="slash" [$__range])
+    or
+    count_over_time({...} | event_name="tool_result" | tool_name="Skill" | label_format invocation_name=`...regex...`,source="skill_tool" [$__range])
+  )
+  ```
+- **Extract `skill_name` from `tool_parameters` JSON** — `tool_result` events for Skill tool invocations have `tool_parameters` as a JSON string like `{"skill_name":"superpowers:writing-plans"}`. Use LogQL `label_format` with Go template `regexReplaceAll` to extract:
+  ```
+  | label_format skill_name=`{{ regexReplaceAll "^.*\"skill_name\":\"([^\"]+)\".*$" .tool_parameters "$1" }}`
+  ```
+
+## Event field shapes
+
+- **`api_request` event structured metadata** (verified live via curl against Loki): `cost_usd`, `cost_usd_micros`, `duration_ms`, `model`, `query_source`, `effort`, `speed`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`, `prompt_id`, `request_id`, plus standard session/project/host attributes. All 4 token types are present on events — Prometheus is not the only source for token counts.
+- **`prompt_id` is the cross-event join key** in Loki. Same `prompt_id` appears on `user_prompt`, `api_request`, and `tool_result` events for a single interaction. For exact slash-command cost attribution in a Grafana table panel: query cost-per-prompt_id (`api_request` unwrap `cost_usd`) and command-per-prompt_id (`user_prompt` with `command_source="custom"`), then apply Grafana `joinByField` transformation on `prompt_id` and group by `command_name`.
+- **Cost-by-skill attribution caveats**:
+  - **Slash commands** (`/foo`) — exact attribution. The slash command IS the `user_prompt`, so all `api_request`s within that `prompt_id` belong to it. Sum cost per `prompt_id`.
+  - **Skill tool invocations** (e.g., `superpowers:writing-plans`) — attribute full interaction cost to each Skill tool that ran in that interaction. If an interaction invokes multiple skills, total cost overcounts but average cost per invocation remains a useful signal.
+- **Tempo `claude_code.interaction` span carries `user_prompt` as an attribute** (e.g., `user_prompt: "/commit"`). Useful for trace-side attribution of slash commands without joining to Loki events.
+- **OTEL trace export tuning** — `OTEL_BSP_SCHEDULE_DELAY` default is 5000ms. Lowered in `bin/claude.env` to 2000ms with `OTEL_BSP_MAX_EXPORT_BATCH_SIZE=128` and `OTEL_LOGS_EXPORT_INTERVAL=2000` so completed child spans (`llm_request`, `tool`) and events surface faster in dashboards. Caveat: the root `claude_code.interaction` span does NOT close until the interaction ends; no config tweak changes this — long interactions remain invisible to "Interaction Traces" panels until completion.
 
 ## Development notes
 
 - **ShellCheck Fedora package** — `sudo dnf install ShellCheck` (capital S, capital C).
+- **Windows CRLF line endings break shell scripts** — shellcheck flags SC1017 on every line. Sourced env files (e.g., `bin/claude.env`) also break — exported vars get trailing `\r` (e.g., `OTEL_BSP_SCHEDULE_DELAY=2000\r`) which the OTEL SDK silently rejects or misparses. Strip with `sed -i 's/\r$//' <file>` or rewrite via editor with LF endings.
 
 ## Grafana datasource UIDs
 

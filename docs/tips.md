@@ -58,7 +58,30 @@ sum by (event_name) (count_over_time({service_name="claude-code"} | event_name=~
 
 # Log stream with multiple filters
 {service_name="claude-code"} | event_name="tool_result" | success="false"
+
+# unwrap on structured metadata — works on current Loki
+sum(sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [1h]))
+
+# Union range-vector results across event types with a discriminator label
+sum by (prompt_id, name, source) (
+  count_over_time({service_name="claude-code"} | event_name="user_prompt" | label_format name=`{{.command_name}}`,source="slash" [$__range])
+  or
+  count_over_time({service_name="claude-code"} | event_name="tool_result" | label_format name=`{{.tool_name}}`,source="skill_tool" [$__range])
+)
 ```
+
+`cost_usd`, `cost_usd_micros`, `duration_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, and `cache_creation_tokens` are all unwrappable from `api_request` events. Older Loki versions rejected `unwrap` on structured metadata; current versions accept it.
+
+### Cross-event joins via prompt_id
+
+- **`prompt_id` is the cross-event join key** — the same `prompt_id` appears on `user_prompt`, `api_request`, and `tool_result` events for a single interaction.
+- Enables exact per-interaction cost attribution: query cost-per-`prompt_id` and command/tool-per-`prompt_id` separately, then join in Grafana via the `joinByField` transformation.
+
+### Template variables from Loki structured metadata
+
+- **`label_values()` only returns true labels** — for Loki, that's `service_name` plus any k8s-injected labels like `pod` and `namespace`. Variables sourced from `label_values(..., session_id)` or `label_values(..., project)` come back empty because those fields are structured metadata, not labels.
+- Structured-metadata values are exposed via `/loki/api/v1/detected_field/{name}/values`, but Grafana's dashboard JSON variable format does not expose that endpoint cleanly.
+- Workaround: source the template variable from Prometheus (e.g., `label_values(claude_code_cost_usage_USD_total, project)`), or hardcode.
 
 ### Query patterns that DON'T WORK
 
@@ -68,19 +91,13 @@ sum by (event_name) (count_over_time({service_name="claude-code"} | event_name=~
 
 # ❌ JSON parsing — data isn't in the log body, it's structured metadata
 {service_name="claude-code"} | json | event_name="api_request"
-
-# ❌ unwrap on structured metadata — parse error
-{service_name="claude-code"} | event_name="api_request" | unwrap cost_usd
-
-# ❌ unpack + unwrap — also fails
-{service_name="claude-code"} | event_name="api_request" | unpack | unwrap cost_usd
 ```
 
 ### Implication for dashboards
 
-- **Use Loki for**: counting events, filtering by type, rate calculations (`count_over_time`), log streams, breakdowns by category (`sum by`)
-- **Use Prometheus for**: numeric aggregation (cost in USD, token counts, duration, active time) — these come in as proper OTEL metrics with full label support
-- **You cannot scatter-plot numeric values from Loki events** (cost per call, latency per call) because `unwrap` doesn't work on structured metadata. Those visualizations require Prometheus metrics.
+- **Use Loki for**: counting events, filtering by type, rate calculations (`count_over_time`), log streams, breakdowns by category (`sum by`), and exact per-event sums of numeric fields (`unwrap` + `sum_over_time`) including cross-event joins via `prompt_id`.
+- **Use Prometheus for**: time-series counter rates and long-range aggregations where you want OTEL metric semantics — cost, tokens, duration, and active time are all available as proper OTEL metrics with full label support.
+- Both backends carry cost and token data. Prometheus is best for counter rates; Loki is best for exact per-event sums and per-interaction attribution.
 
 ## OTEL Collector
 
