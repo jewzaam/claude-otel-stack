@@ -50,7 +50,7 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 3,
         "x": 0,
         "y": 0
       },
@@ -127,7 +127,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 4,
+        "x": 3,
         "y": 0
       },
       "id": 1,
@@ -164,6 +164,99 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "yellow",
+                "value": 0.8
+              },
+              {
+                "color": "red",
+                "value": 0.95
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 7,
+        "y": 0
+      },
+      "id": 200,
+      "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": false
+        },
+        "endpointMarker": "none",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto",
+        "sparkline": false,
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "13.0.1+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "claude_quota_utilization{bucket=\"five_hour\"}",
+          "legendFormat": "5 Hour",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "editorMode": "code",
+          "expr": "claude_quota_utilization{bucket=\"seven_day\"}",
+          "instant": false,
+          "legendFormat": "7 Day",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Quotas",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
@@ -193,7 +286,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 8,
+        "x": 11,
         "y": 0
       },
       "id": 2,
@@ -275,7 +368,7 @@
       "gridPos": {
         "h": 4,
         "w": 4,
-        "x": 11,
+        "x": 14,
         "y": 0
       },
       "id": 5,
@@ -342,7 +435,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 15,
+        "x": 18,
         "y": 0
       },
       "id": 3,
@@ -376,85 +469,6 @@
       ],
       "title": "Active Time",
       "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "max": 1,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": 0
-              },
-              {
-                "color": "yellow",
-                "value": 0.3
-              },
-              {
-                "color": "green",
-                "value": 0.6
-              }
-            ]
-          },
-          "unit": "percentunit"
-        }
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 18,
-        "y": 0
-      },
-      "id": 4,
-      "options": {
-        "barShape": "flat",
-        "barWidthFactor": 0.5,
-        "effects": {
-          "barGlow": false,
-          "centerGlow": false,
-          "gradient": true
-        },
-        "endpointMarker": "point",
-        "minVizHeight": 75,
-        "minVizWidth": 75,
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "segmentCount": 1,
-        "segmentSpacing": 0.3,
-        "shape": "gauge",
-        "showThresholdLabels": false,
-        "showThresholdMarkers": true,
-        "sizing": "auto",
-        "sparkline": true,
-        "textMode": "auto"
-      },
-      "pluginVersion": "13.0.1+security-01",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) / (sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap input_tokens [$__range])) + 1)",
-          "refId": "A"
-        }
-      ],
-      "title": "Cache Hit Ratio",
-      "type": "gauge"
     },
     {
       "datasource": {
@@ -1576,6 +1590,75 @@
         "regexApplyTo": "value",
         "skipUrlSync": false,
         "sort": 2,
+        "type": "query"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "v_5h",
+        "options": [],
+        "query": "label_values(claude_quota_utilization{bucket=\"five_hour\"}, bucket)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "v_7d",
+        "options": [],
+        "query": "label_values(claude_quota_utilization{bucket=\"seven_day\"}, bucket)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": true,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "allowCustomValue": true,
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 2,
+        "includeAll": false,
+        "multi": false,
+        "name": "v_7d_high",
+        "options": [],
+        "query": "query_result(claude_quota_utilization{bucket=\"seven_day\"} > 0.9)",
+        "refresh": 2,
+        "regex": "/bucket=\"([^\"]+)\"/",
+        "regexApplyTo": "value",
+        "skipUrlSync": true,
+        "sort": 0,
         "type": "query"
       }
     ]
