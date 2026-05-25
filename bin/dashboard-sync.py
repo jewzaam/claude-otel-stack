@@ -29,6 +29,7 @@ DASHBOARDS = {
     "claude-session": "grafana-dashboard-session.json",
     "claude-unified": "grafana-dashboard-unified.json",
     "claude-projections": "grafana-dashboard-projections.json",
+    "claude-quota": "grafana-dashboard-quota.json",
 }
 
 
