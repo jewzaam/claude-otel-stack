@@ -91,7 +91,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"five_hour\"}",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -169,7 +173,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day\"}",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -247,7 +255,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day_sonnet\"}",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -323,7 +335,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_credentials_present",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -389,7 +405,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "time() - claude_quota_last_fetch_timestamp_seconds",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -547,7 +567,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_fetch_success_total",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -612,7 +636,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_fetch_failure_total",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -677,7 +705,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"five_hour\"} - time()",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -734,7 +766,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"seven_day\"} - time()",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -791,7 +827,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"seven_day_sonnet\"} - time()",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -870,7 +910,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
+          "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day_omelette\"}",
+          "instant": true,
+          "range": false,
           "refId": "A"
         }
       ],
