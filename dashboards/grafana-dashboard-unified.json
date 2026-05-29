@@ -32,16 +32,13 @@
             "mode": "fixed"
           },
           "decimals": 0,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
                 "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
+                "value": null
               }
             ]
           },
@@ -56,11 +53,9 @@
       },
       "id": 22,
       "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
+        "minVizHeight": 75,
+        "minVizWidth": 75,
         "orientation": "auto",
-        "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -68,9 +63,10 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "sizing": "auto",
+        "textMode": "value_and_name"
       },
       "pluginVersion": "13.0.1+security-01",
       "targets": [
@@ -79,8 +75,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[5m]) > 0))",
+          "instant": true,
           "legendFormat": "active",
+          "range": false,
           "refId": "A"
         },
         {
@@ -88,13 +87,118 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
+          "editorMode": "code",
           "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range])))",
+          "instant": true,
+          "legendFormat": "total",
+          "range": false,
+          "refId": "B"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "B",
+            "mappings": [
+              {
+                "fieldName": "total",
+                "handlerKey": "max"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Sessions",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 0,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 3,
+        "y": 0
+      },
+      "id": 203,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": false,
+        "sizing": "auto",
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "13.0.1+security-01",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [5m]))",
+          "legendFormat": "active",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [$__range]))",
           "legendFormat": "total",
           "refId": "B"
         }
       ],
-      "title": "Sessions",
-      "type": "stat"
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "B",
+            "mappings": [
+              {
+                "fieldName": "total",
+                "handlerKey": "max"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "Agents",
+      "type": "gauge"
     },
     {
       "datasource": {
@@ -126,8 +230,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 3,
+        "w": 3,
+        "x": 6,
         "y": 0
       },
       "id": 1,
@@ -194,7 +298,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 7,
+        "x": 9,
         "y": 0
       },
       "id": 200,
@@ -291,7 +395,7 @@
       "gridPos": {
         "h": 4,
         "w": 1,
-        "x": 10,
+        "x": 12,
         "y": 0
       },
       "id": 202,
@@ -362,7 +466,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 11,
+        "x": 13,
         "y": 0
       },
       "id": 2,
@@ -443,8 +547,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 14,
+        "w": 3,
+        "x": 16,
         "y": 0
       },
       "id": 5,
@@ -511,7 +615,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 18,
+        "x": 19,
         "y": 0
       },
       "id": 3,
@@ -576,8 +680,8 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 21,
+        "w": 2,
+        "x": 22,
         "y": 0
       },
       "id": 6,
