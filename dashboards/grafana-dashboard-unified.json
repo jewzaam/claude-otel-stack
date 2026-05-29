@@ -38,7 +38,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -53,6 +53,14 @@
       },
       "id": 22,
       "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": true
+        },
+        "endpointMarker": "point",
         "minVizHeight": 75,
         "minVizWidth": 75,
         "orientation": "auto",
@@ -63,12 +71,16 @@
           "fields": "",
           "values": false
         },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
         "showThresholdLabels": false,
         "showThresholdMarkers": false,
         "sizing": "auto",
+        "sparkline": true,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -95,6 +107,7 @@
           "refId": "B"
         }
       ],
+      "title": "Sessions",
       "transformations": [
         {
           "id": "configFromData",
@@ -109,7 +122,6 @@
           }
         }
       ],
-      "title": "Sessions",
       "type": "gauge"
     },
     {
@@ -130,7 +142,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -145,6 +157,14 @@
       },
       "id": 203,
       "options": {
+        "barShape": "flat",
+        "barWidthFactor": 0.5,
+        "effects": {
+          "barGlow": false,
+          "centerGlow": false,
+          "gradient": true
+        },
+        "endpointMarker": "point",
         "minVizHeight": 75,
         "minVizWidth": 75,
         "orientation": "auto",
@@ -155,12 +175,16 @@
           "fields": "",
           "values": false
         },
+        "segmentCount": 1,
+        "segmentSpacing": 0.3,
+        "shape": "gauge",
         "showThresholdLabels": false,
         "showThresholdMarkers": false,
         "sizing": "auto",
+        "sparkline": true,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -183,6 +207,7 @@
           "refId": "B"
         }
       ],
+      "title": "Agents",
       "transformations": [
         {
           "id": "configFromData",
@@ -197,7 +222,6 @@
           }
         }
       ],
-      "title": "Agents",
       "type": "gauge"
     },
     {
@@ -252,7 +276,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -330,7 +354,7 @@
         "sparkline": false,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -416,7 +440,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -487,7 +511,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -569,7 +593,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -636,7 +660,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -702,7 +726,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -771,7 +795,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -838,7 +862,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -907,7 +931,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -976,7 +1000,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1041,7 +1065,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1106,7 +1130,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1210,7 +1234,7 @@
           }
         ]
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1299,8 +1323,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "mixed",
+        "uid": "-- Mixed --"
       },
       "fieldConfig": {
         "defaults": {
@@ -1348,15 +1372,26 @@
               {
                 "color": "green",
                 "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
           "unit": "short"
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "agents",
+              "scope": "series"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
@@ -1374,7 +1409,7 @@
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
         "tooltip": {
           "hideZeros": false,
@@ -1382,7 +1417,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1392,6 +1427,18 @@
           "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[5m]) > 0))",
           "legendFormat": "active sessions",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [5m]))",
+          "legendFormat": "agents",
+          "queryType": "range",
+          "refId": "B"
         }
       ],
       "title": "Active Sessions Over Time",
@@ -1481,7 +1528,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1552,7 +1599,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1617,7 +1664,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1660,7 +1707,7 @@
         "unwrappedColumns": false,
         "wrapLogMessage": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1702,7 +1749,7 @@
         "unwrappedColumns": false,
         "wrapLogMessage": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1715,24 +1762,6 @@
       ],
       "title": "API Requests",
       "type": "logs"
-    },
-    {
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 48
-      },
-      "id": 201,
-      "options": {},
-      "pluginVersion": "13.0.1+security-01",
-      "targets": [
-        {
-          "refId": "A"
-        }
-      ],
-      "title": "New panel",
-      "type": "__unconfigured-panel"
     }
   ],
   "preload": false,
