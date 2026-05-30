@@ -80,7 +80,7 @@
         "sparkline": true,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -184,7 +184,7 @@
         "sparkline": true,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -276,7 +276,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -354,7 +354,7 @@
         "sparkline": false,
         "textMode": "value_and_name"
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -364,6 +364,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"five_hour\"}",
+          "format": "heatmap",
           "instant": true,
           "legendFormat": "5 Hour",
           "range": false,
@@ -377,6 +378,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day\"}",
+          "format": "heatmap",
           "instant": true,
           "legendFormat": "7 Day",
           "range": false,
@@ -440,7 +442,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -450,6 +452,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "time() - claude_quota_last_fetch_timestamp_seconds",
+          "format": "heatmap",
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -511,7 +514,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -593,7 +596,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -660,7 +663,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -726,7 +729,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -795,7 +798,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -862,7 +865,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -931,7 +934,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1000,7 +1003,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1065,7 +1068,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1130,7 +1133,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1234,7 +1237,7 @@
           }
         ]
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1417,7 +1420,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1528,7 +1531,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1599,7 +1602,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1664,7 +1667,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
@@ -1707,7 +1710,7 @@
         "unwrappedColumns": false,
         "wrapLogMessage": true
       },
-      "pluginVersion": "13.0.1",
+      "pluginVersion": "13.0.1+security-01",
       "targets": [
         {
           "datasource": {
