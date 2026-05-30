@@ -973,7 +973,7 @@
             "spanNulls": false,
             "stacking": {
               "group": "A",
-              "mode": "none"
+              "mode": "normal"
             },
             "thresholdsStyle": {
               "mode": "off"
@@ -995,30 +995,6 @@
           "unit": "short"
         },
         "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "failure"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          },
           {
             "matcher": {
               "id": "byName",
@@ -1067,9 +1043,10 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "increase(claude_quota_fetch_success_total[1h])",
-          "hide": true,
+          "editorMode": "code",
+          "expr": "clamp(increase(claude_quota_fetch_success_total[5m]),0,1)",
           "legendFormat": "success",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1077,12 +1054,14 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "increase(claude_quota_fetch_failure_total[1h])",
+          "editorMode": "code",
+          "expr": "clamp(increase(claude_quota_fetch_failure_total[5m]),0,1)",
           "legendFormat": "failure",
+          "range": true,
           "refId": "B"
         }
       ],
-      "title": "Fetch Failure Rate (per hour)",
+      "title": "Fetch Failure Rate",
       "type": "timeseries"
     }
   ],
