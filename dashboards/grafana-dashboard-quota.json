@@ -94,6 +94,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"five_hour\"}",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -176,6 +177,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day\"}",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -258,6 +260,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day_sonnet\"}",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -338,6 +341,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_credentials_present",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -408,6 +412,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "time() - claude_quota_last_fetch_timestamp_seconds",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -509,8 +514,11 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "claude_quota_utilization",
+          "editorMode": "code",
+          "expr": "max by(bucket) (claude_quota_utilization)",
+          "format": "time_series",
           "legendFormat": "{{bucket}}",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -570,6 +578,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_fetch_success_total",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -639,6 +648,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_fetch_failure_total",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -708,6 +718,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"five_hour\"} - time()",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -769,6 +780,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"seven_day\"} - time()",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -830,6 +842,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_resets_at_seconds{bucket=\"seven_day_sonnet\"} - time()",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
@@ -913,6 +926,7 @@
           "editorMode": "code",
           "exemplar": false,
           "expr": "claude_quota_utilization{bucket=\"seven_day_omelette\"}",
+          "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
