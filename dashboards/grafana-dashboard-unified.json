@@ -1233,7 +1233,7 @@
         "sortBy": [
           {
             "desc": true,
-            "displayName": "avg_cost"
+            "displayName": "total_cost"
           }
         ]
       },
@@ -1786,7 +1786,7 @@
         "hide": 0,
         "includeAll": true,
         "label": "Project (cwd)",
-        "multi": false,
+        "multi": true,
         "name": "project",
         "options": [],
         "query": "label_values(claude_code_cost_usage_USD_total, project)",
@@ -1811,7 +1811,7 @@
         "hide": 0,
         "includeAll": true,
         "label": "Session ID",
-        "multi": false,
+        "multi": true,
         "name": "session_id",
         "options": [],
         "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\"}, session_id)",
