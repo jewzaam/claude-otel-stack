@@ -88,7 +88,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[5m]) > 0))",
+          "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[5m]) > 0))",
           "instant": true,
           "legendFormat": "active",
           "range": false,
@@ -100,7 +100,7 @@
             "uid": "PBFA97CFB590B2093"
           },
           "editorMode": "code",
-          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range])))",
+          "expr": "count(count by (session_id) (increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[$__range])))",
           "instant": true,
           "legendFormat": "total",
           "range": false,
@@ -192,7 +192,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [5m]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [5m]))",
           "legendFormat": "active",
           "refId": "A"
         },
@@ -202,7 +202,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [$__range]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [$__range]))",
           "legendFormat": "total",
           "refId": "B"
         }
@@ -283,7 +283,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cost_usd [$__range]))",
           "refId": "A"
         }
       ],
@@ -521,7 +521,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap output_tokens [$__range]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap output_tokens [$__range]))",
           "refId": "A"
         }
       ],
@@ -603,7 +603,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "round(sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range])))",
+          "expr": "round(sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[$__range])))",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -670,7 +670,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
+          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[$__range]))",
           "refId": "A"
         }
       ],
@@ -738,7 +738,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" [$__range]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [$__range]))",
           "queryType": "range",
           "refId": "A"
         }
@@ -805,7 +805,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project_clean) (label_replace(sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
+          "expr": "sum by (project_clean) (label_replace(sum by (host_name) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name=~\"sandbox-.*\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"host_name\", \"(.*)\")) or sum by (project_clean) (label_replace(sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name!~\"sandbox-.*\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
           "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
@@ -873,7 +873,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
           "legendFormat": "{{short_id}}",
           "range": true,
           "refId": "A"
@@ -942,7 +942,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
           "legendFormat": "{{model_short}}",
           "range": true,
           "refId": "A"
@@ -1010,7 +1010,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (query_source) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range]))",
+          "expr": "sum by (query_source) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cost_usd [$__range]))",
           "legendFormat": "{{query_source}}",
           "refId": "A"
         }
@@ -1075,7 +1075,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=~\"$session_id\" | project=~\"$project\" [$__range]))",
+          "expr": "sum by (tool_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [$__range]))",
           "legendFormat": "{{tool_name}}",
           "refId": "A"
         }
@@ -1140,7 +1140,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | command_source=\"custom\" [$__range]))",
+          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | command_source=\"custom\" [$__range]))",
           "legendFormat": "/{{command_name}}",
           "refId": "A"
         },
@@ -1149,7 +1149,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=~\"$session_id\" | project=~\"$project\" | tool_name=\"Skill\" [$__range]))",
+          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | tool_name=\"Skill\" [$__range]))",
           "legendFormat": "{{tool_parameters}}",
           "refId": "B"
         }
@@ -1244,7 +1244,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | unwrap cost_usd [$__range]))",
+          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | unwrap cost_usd [$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1255,7 +1255,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range]))",
+          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1427,7 +1427,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\"}[5m]) > 0))",
+          "expr": "count(count by (session_id) (rate(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[5m]) > 0))",
           "legendFormat": "active sessions",
           "refId": "A"
         },
@@ -1438,7 +1438,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" [5m]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"subagent_completed\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [5m]))",
           "legendFormat": "agents",
           "queryType": "range",
           "refId": "B"
@@ -1540,7 +1540,7 @@
           },
           "limit": 5000,
           "metricsQueryType": "range",
-          "query": "{span.session.id=~\"$session_id\" && resource.project=~\"$project\" && name=~\"claude_code.interaction\"}",
+          "query": "{span.session.id=~\"$session_id\" && resource.project=~\"$project\" && resource.host.name=~\"$host_name\" && name=~\"claude_code.interaction\"}",
           "queryType": "traceql",
           "refId": "A",
           "serviceMapUseNativeHistograms": false,
@@ -1609,7 +1609,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\"}[$__range]))",
+          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\"}[$__range]))",
           "legendFormat": "{{language}}",
           "refId": "A"
         }
@@ -1674,7 +1674,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" [$__range]))",
+          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" [$__range]))",
           "legendFormat": "{{decision}} ({{source}})",
           "refId": "A"
         }
@@ -1717,7 +1717,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "{service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | line_format \"{{.prompt}}\"",
+          "expr": "{service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | line_format \"{{.prompt}}\"",
           "refId": "A"
         }
       ],
@@ -1759,7 +1759,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "{service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | line_format \"model={{.model}} cost=${{.cost_usd}} duration={{.duration_ms}}ms tokens: in={{.input_tokens}} out={{.output_tokens}} cache_read={{.cache_read_tokens}} source={{.query_source}}\"",
+          "expr": "{service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | line_format \"model={{.model}} cost=${{.cost_usd}} duration={{.duration_ms}}ms tokens: in={{.input_tokens}} out={{.output_tokens}} cache_read={{.cache_read_tokens}} source={{.query_source}}\"",
           "refId": "A"
         }
       ],
@@ -1810,11 +1810,36 @@
         },
         "hide": 0,
         "includeAll": true,
+        "label": "Host",
+        "multi": true,
+        "name": "host_name",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\"}, host_name)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
         "label": "Session ID",
         "multi": true,
         "name": "session_id",
         "options": [],
-        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\"}, session_id)",
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\", host_name=~\"$host_name\"}, session_id)",
         "refresh": 2,
         "regex": "",
         "regexApplyTo": "value",
