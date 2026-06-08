@@ -45,6 +45,15 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed. Adding a new UID→filename mapping in `dashboard-sync.py` requires restarting the container (`podman-compose restart dashboard-sync`); existing dashboard edits sync without restart.
 - **`host.name=$(hostname)`** — added to `OTEL_RESOURCE_ATTRIBUTES` in `claude.env` for future multi-host aggregation.
 
+## Loki deployment gotchas
+
+- **Single-node ring config** — Loki defaults to Consul KV store on localhost:8500 for the ring. Single-node deployments need `common.ring.kvstore.store: inmemory` and `common.replication_factor: 1`. Without this, Loki fails with `unable to initialise ring state: Get "http://localhost:8500/v1/kv/collectors/ring"`.
+- **schema_config is mandatory** — Loki panics on startup without `schema_config` section. `validateSchemaRequirements` panics with `index out of range [0] with length 0`. Cannot be omitted even when using defaults.
+- **Ruler remote_write struct format** — Loki ruler `remote_write` is a struct (`enabled: true` + `client.url: ...`), NOT a Prometheus-style list (`- url: ...`). Using list syntax causes `cannot unmarshal !!seq into ruler.RemoteWriteConfig`.
+- **Ruler WAL path** — Ruler WAL directory must be an absolute path writable by the container process. Default is relative `ruler-wal` which causes `mkdir ruler-wal: permission denied` in containers. Set `ruler.wal.dir: /loki/ruler-wal` (inside the data volume).
+- **Do NOT use `common.path_prefix`** when adding config to a Loki that previously ran with defaults — it changes storage subdirectory paths and orphans existing index/chunk data. Set explicit paths instead: `storage_config.tsdb_shipper.active_index_directory`, `storage_config.filesystem.directory`, `ingester.wal.dir`, `compactor.working_directory`, `ruler.wal.dir`. Inspect the volume to find actual data paths: `podman run --rm -v <volume>:/loki:z alpine find /loki -maxdepth 3 -type d | sort`.
+- **All writable paths must be absolute** — without `common.path_prefix`, several components default to relative paths (`wal`, `ruler-wal`, `/var/loki`) that fail with permission denied in containers. Every writable directory needs an explicit absolute path under the data volume.
+
 ## Query language gotchas
 
 - **TraceQL attribute prefixes** — resource attributes use `resource.` prefix (e.g., `resource.project`), span attributes use `span.` prefix (e.g., `span.session.id`). Do NOT backtick-quote dotted attribute names in Grafana — Tempo API accepts backticks but Grafana's TraceQL parser rejects them. Use `span.session.id` not `` span.`session.id` ``.
