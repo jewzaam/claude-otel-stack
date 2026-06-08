@@ -14,6 +14,10 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-remote-write-receiver"
     volumes:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:z
       - prometheus-data:/prometheus
@@ -24,9 +28,12 @@ services:
 
   loki:
     image: grafana/loki:latest
+    command: ["-config.file=/etc/loki/local-config.yaml"]
     ports:
       - "3100:3100"
     volumes:
+      - ./config/loki-config.yaml:/etc/loki/local-config.yaml:z
+      - ./config/loki-rules:/loki/rules:z
       - loki-data:/loki
 
   tempo:
