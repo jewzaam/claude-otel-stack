@@ -9,6 +9,7 @@ server:
   http_listen_port: 3100
 
 common:
+  path_prefix: /loki
   ring:
     instance_addr: 127.0.0.1
     kvstore:
@@ -41,6 +42,7 @@ storage_config:
 
 ruler:
   enable_api: true
+  rule_path: /loki/rules-temp
   wal:
     dir: /loki/ruler-wal
   storage:
