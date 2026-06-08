@@ -26,6 +26,8 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | `systemd/claude-otel-stack.service` | systemd user unit for autostart |
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
 | `config/prometheus.yml` | Scrape config for collector's prometheus exporter on `:8889` |
+| `config/loki-config.yaml` | Loki config — ruler with remote write to Prometheus |
+| `config/loki-rules/claude/rules.yaml` | Recording rules: derive session state from native OTEL events |
 | `config/tempo.yaml` | Tempo trace storage (local backend) |
 | `config/grafana-datasources.yaml` | Auto-provisions Prometheus, Loki, Tempo datasources |
 | `dashboards/*.json` | Grafana dashboard JSON for import |
@@ -103,3 +105,22 @@ Dashboard JSON files use these UIDs. If the stack is recreated, UIDs will change
 | `claude_code_code_edit_tool_decision_total` | tool_name, decision, source, language |
 
 Standard labels on all: session_id, user_name, environment, terminal_type, service_version, project (if set).
+
+## Recording rules (Loki ruler → Prometheus)
+
+Loki recording rules in `config/loki-rules/claude/rules.yaml` derive session state from native Claude Code OTEL events and remote-write metrics to Prometheus. Used by `claude-dashboard` for state display.
+
+| Metric | Meaning | LogQL signal |
+|--------|---------|-------------|
+| `claude_session_working` | Activity count in last 60s | `api_request`, `tool_decision`, `tool_result`, `skill_activated` |
+| `claude_session_ready` | Stop is most recent event | `hook_execution_complete` with `hook_event=Stop` timestamp > activity timestamp |
+| `claude_session_permission` | Permission requested in last 60s | `hook_execution_complete` with `hook_event=PermissionRequest` |
+
+Labels on all: `session_id`, `host_name`, `project`.
+
+### Recording rule gotchas
+
+- **Use `observed_timestamp` not `event_sequence`** for time comparisons — `event_sequence` resets across session resumes (sandbox reconnects, `/resume`).
+- **Filter `event_name = "hook_execution_complete"`** for real hook events — `hook_registered` events also carry `hook_event` labels but are session-start metadata, not firings.
+- **`count_over_time` needs `sum by` wrapper** — `count_over_time` does not support `by()` grouping directly.
+- **Prometheus remote write receiver** must be enabled via `--web.enable-remote-write-receiver` flag on the Prometheus container.
