@@ -12,17 +12,18 @@
 
 groups:
   - name: claude-session-state
-    interval: 10s
+    interval: 5s
     rules:
-      # WORKING: activity events in the last 60s.
+      # WORKING: activity events in the last 15s.
       # Includes main thread and subagent events (same session_id).
+      # Window kept short so READY can surface quickly after Stop.
       - record: claude_session_working
         expr: |
           sum by (session_id, host_name, project) (
             count_over_time(
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated"
-              [60s]
+              [15s]
             )
           )
 
