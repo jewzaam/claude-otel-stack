@@ -23,6 +23,7 @@ groups:
             count_over_time(
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated"
+              | query_source !~ "away_summary|compact|generate_session_title"
               [15s]
             )
           )
@@ -48,6 +49,7 @@ groups:
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|user_prompt"
+                | query_source !~ "away_summary|compact|generate_session_title"
                 | unwrap observed_timestamp [30m]
               ) by (session_id, host_name, project)
             )
