@@ -25,6 +25,7 @@ schema_config:
       index:
         prefix: index_
         period: 24h
+        path_prefix: tables/
 
 ingester:
   wal:

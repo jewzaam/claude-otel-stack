@@ -28,7 +28,14 @@ services:
 
   loki:
     image: grafana/loki:3.4.2
-    command: ["-config.file=/etc/loki/local-config.yaml"]
+    entrypoint:
+      - sh
+      - -c
+      - |
+        for d in /loki/tsdb-shipper-active /loki/chunks/index /loki/compactor; do
+          cd "$d" 2>/dev/null && rm -rf wal per_tenant scratch uploader multitenant 2>/dev/null
+        done
+        exec /usr/bin/loki -config.file=/etc/loki/local-config.yaml
     ports:
       - "3100:3100"
     volumes:
