@@ -56,16 +56,28 @@ groups:
             or vector(0)
           )
 
-      # PERMISSION_REQUIRED: PermissionRequest hook fired in last 60s.
-      # Only fires on non-sandbox sessions (sandboxes use
-      # --dangerously-skip-permissions).
+      # PERMISSION_REQUIRED: PermissionRequest is the most recent significant event.
+      # Uses timestamp comparison like READY — permission stays active until
+      # a tool_result (permission granted) or Stop (denied/cancelled) fires.
       - record: claude_session_permission
         expr: |
-          sum by (session_id, host_name, project) (
-            count_over_time(
+          max by (session_id, host_name, project) (
+            max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "PermissionRequest"
-              [60s]
+              | unwrap observed_timestamp [30m]
+            ) by (session_id, host_name, project)
+          )
+          >
+          (
+            max by (session_id, host_name, project) (
+              max_over_time(
+                {service_name="claude-code"}
+                | event_name =~ "tool_result|user_prompt"
+                | query_source !~ "away_summary|compact|generate_session_title"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id, host_name, project)
             )
+            or vector(0)
           )
