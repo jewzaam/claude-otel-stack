@@ -53,6 +53,9 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **Ruler WAL path** — Ruler WAL directory must be an absolute path writable by the container process. Default is relative `ruler-wal` which causes `mkdir ruler-wal: permission denied` in containers. Set `ruler.wal.dir: /loki/ruler-wal` (inside the data volume).
 - **Do NOT use `common.path_prefix`** when adding config to a Loki that previously ran with defaults — it changes storage subdirectory paths and orphans existing index/chunk data. Set explicit paths instead: `storage_config.tsdb_shipper.active_index_directory`, `storage_config.filesystem.directory`, `ingester.wal.dir`, `compactor.working_directory`, `ruler.wal.dir`. Inspect the volume to find actual data paths: `podman run --rm -v <volume>:/loki:z alpine find /loki -maxdepth 3 -type d | sort`.
 - **All writable paths must be absolute** — without `common.path_prefix`, several components default to relative paths (`wal`, `ruler-wal`, `/var/loki`) that fail with permission denied in containers. Every writable directory needs an explicit absolute path under the data volume.
+- **Compactor `tables/` path isolation** — the Loki compactor panics (`slice bounds out of range [-2:]` in `ExtractIntervalFromTableName`) when non-table directories (`wal`, `uploader`, `multitenant`, `per_tenant`, `scratch`) exist in the TSDB index path. Fix: `path_prefix: tables/` in schema_config's index section isolates index tables in a `tables/` subdirectory under `filesystem.directory`. Compactor only scans that subdirectory — no junk entries.
+- **`tables/` directory ownership** — when creating the `tables/` directory via alpine container for data migration, it's owned by root. Loki runs as UID 10001. Must `chown -R 10001:10001 /loki/chunks/tables/` after creation. One-time fix — subsequent tables created by Loki have correct ownership.
+- **Loki entrypoint cleanup** — docker-compose uses an entrypoint wrapper that removes non-table dirs (`wal`, `per_tenant`, `scratch`, `uploader`, `multitenant`) from `tsdb-shipper-active`, `chunks/index`, and `compactor` before exec'ing Loki. Prevents compactor panic on restart when the TSDB shipper recreates operational dirs.
 
 ## Query language gotchas
 
@@ -123,7 +126,7 @@ Loki recording rules in `config/loki-rules/claude/rules.yaml` derive session sta
 |--------|---------|-------------|
 | `claude_session_working` | Activity count in last 60s | `api_request`, `tool_decision`, `tool_result`, `skill_activated` |
 | `claude_session_ready` | Stop is most recent event | `hook_execution_complete` with `hook_event=Stop` timestamp > activity timestamp |
-| `claude_session_permission` | Permission requested in last 60s | `hook_execution_complete` with `hook_event=PermissionRequest` |
+| `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 
 Labels on all: `session_id`, `host_name`, `project`.
 
@@ -133,3 +136,4 @@ Labels on all: `session_id`, `host_name`, `project`.
 - **Filter `event_name = "hook_execution_complete"`** for real hook events — `hook_registered` events also carry `hook_event` labels but are session-start metadata, not firings.
 - **`count_over_time` needs `sum by` wrapper** — `count_over_time` does not support `by()` grouping directly.
 - **Prometheus remote write receiver** must be enabled via `--web.enable-remote-write-receiver` flag on the Prometheus container.
+- **Exclude housekeeping events from WORKING and READY rules** — both rules filter `query_source !~ "away_summary|compact|generate_session_title"` from activity events. These housekeeping events fire after Stop and would block READY detection by having a newer timestamp than the Stop event.
