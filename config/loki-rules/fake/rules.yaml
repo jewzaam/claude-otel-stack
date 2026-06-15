@@ -14,18 +14,31 @@ groups:
   - name: claude-session-state
     interval: 5s
     rules:
-      # WORKING: activity events in the last 15s.
-      # Includes main thread and subagent events (same session_id).
-      # Window kept short so READY can surface quickly after Stop.
+      # WORKING: most recent activity event is newer than the last Stop.
+      # Uses timestamp comparison — no sliding window, no gaps during
+      # long tool executions or subagent API calls.
+      # Includes subagent_completed so multi-agent work stays WORKING.
       - record: claude_session_working
         expr: |
-          sum by (session_id, host_name, project) (
-            count_over_time(
+          max by (session_id, host_name, project) (
+            max_over_time(
               {service_name="claude-code"}
-              | event_name =~ "api_request|tool_decision|tool_result|skill_activated"
+              | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
               | query_source !~ "away_summary|compact|generate_session_title"
-              [15s]
+              | unwrap observed_timestamp [30m]
+            ) by (session_id, host_name, project)
+          )
+          >
+          (
+            max by (session_id, host_name, project) (
+              max_over_time(
+                {service_name="claude-code"}
+                | event_name = "hook_execution_complete"
+                | hook_event = "Stop"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id, host_name, project)
             )
+            or vector(0)
           )
 
       # READY: Stop hook is the most recent significant event.
@@ -48,7 +61,7 @@ groups:
             max by (session_id, host_name, project) (
               max_over_time(
                 {service_name="claude-code"}
-                | event_name =~ "api_request|tool_decision|tool_result|user_prompt"
+                | event_name =~ "api_request|tool_decision|tool_result|user_prompt|subagent_completed"
                 | query_source !~ "away_summary|compact|generate_session_title"
                 | unwrap observed_timestamp [30m]
               ) by (session_id, host_name, project)
