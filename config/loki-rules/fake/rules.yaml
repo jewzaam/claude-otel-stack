@@ -14,52 +14,17 @@ groups:
   - name: claude-session-state
     interval: 5s
     rules:
-      # WORKING: activity detected via two complementary strategies.
-      #
-      # Branch 1 (timestamp comparison): for sessions that have Stop events,
-      # activity is newer than last Stop → WORKING.  Gap-proof: no false
-      # drops during long tool executions or subagent API calls.
-      #
-      # Branch 2 (sliding window fallback): for sessions that have NEVER
-      # emitted a Stop event (sandboxes use --dangerously-skip-permissions
-      # and don't fire Stop hooks), activity in the last 60s → WORKING.
-      # The `unless` excludes sessions that have Stop events so Branch 1
-      # governs those exclusively — no conflict between branches.
+      # WORKING: activity events in the last 60s.
+      # Includes main thread and subagent events (same session_id).
+      # Excludes housekeeping query sources that fire after Stop.
       - record: claude_session_working
         expr: |
-          max by (session_id, host_name, project) (
-            max_over_time(
-              {service_name="claude-code"}
-              | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
-              | query_source !~ "away_summary|compact|generate_session_title"
-              | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project)
-          )
-          >
-          max by (session_id, host_name, project) (
-            max_over_time(
-              {service_name="claude-code"}
-              | event_name = "hook_execution_complete"
-              | hook_event = "Stop"
-              | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project)
-          )
-          or
           sum by (session_id, host_name, project) (
             count_over_time(
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
               | query_source !~ "away_summary|compact|generate_session_title"
               [60s]
-            )
-          )
-          unless
-          sum by (session_id, host_name, project) (
-            count_over_time(
-              {service_name="claude-code"}
-              | event_name = "hook_execution_complete"
-              | hook_event = "Stop"
-              [30m]
             )
           )
 
