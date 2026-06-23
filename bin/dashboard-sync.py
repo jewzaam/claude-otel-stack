@@ -22,15 +22,11 @@ DASHBOARDS_DIR = os.environ.get("DASHBOARDS_DIR", "/dashboards")
 INTERVAL = int(os.environ.get("INTERVAL", "10"))
 
 DASHBOARDS = {
-    "claude-code-monitor": "grafana-dashboard.json",
-    "claude-cost": "grafana-dashboard-cost.json",
-    "claude-events": "grafana-dashboard-events.json",
-    "claude-skills": "grafana-dashboard-skills.json",
-    "claude-session": "grafana-dashboard-session.json",
     "claude-unified": "grafana-dashboard-unified.json",
     "claude-projections": "grafana-dashboard-projections.json",
     "claude-quota": "grafana-dashboard-quota.json",
     "claude-sessions": "grafana-dashboard-sessions.json",
+    "claude-prompts": "grafana-dashboard-prompts.json",
 }
 
 
