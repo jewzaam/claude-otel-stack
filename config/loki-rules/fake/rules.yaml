@@ -19,11 +19,12 @@ groups:
       # Excludes housekeeping query sources that fire after Stop.
       - record: claude_session_working
         expr: |
-          sum by (session_id, host_name, project) (
+          sum by (session_id, host_name, project, location) (
             count_over_time(
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
               | query_source !~ "away_summary|compact|generate_session_title"
+              | label_format location=`{{ if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               [60s]
             )
           )
@@ -35,23 +36,25 @@ groups:
       # events in the window (freshly started then immediately stopped).
       - record: claude_session_ready
         expr: |
-          max by (session_id, host_name, project) (
+          max by (session_id, host_name, project, location) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "Stop"
+              | label_format location=`{{ if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project)
+            ) by (session_id, host_name, project, location)
           )
           >
           (
-            max by (session_id, host_name, project) (
+            max by (session_id, host_name, project, location) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|user_prompt|subagent_completed"
                 | query_source !~ "away_summary|compact|generate_session_title"
+                | label_format location=`{{ if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project)
+              ) by (session_id, host_name, project, location)
             )
             or vector(0)
           )
@@ -61,23 +64,25 @@ groups:
       # a tool_result (permission granted) or Stop (denied/cancelled) fires.
       - record: claude_session_permission
         expr: |
-          max by (session_id, host_name, project) (
+          max by (session_id, host_name, project, location) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "PermissionRequest"
+              | label_format location=`{{ if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project)
+            ) by (session_id, host_name, project, location)
           )
           >
           (
-            max by (session_id, host_name, project) (
+            max by (session_id, host_name, project, location) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "tool_result|user_prompt"
                 | query_source !~ "away_summary|compact|generate_session_title"
+                | label_format location=`{{ if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project)
+              ) by (session_id, host_name, project, location)
             )
             or vector(0)
           )

@@ -27,7 +27,7 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
 | `config/prometheus.yml` | Scrape config for collector's prometheus exporter on `:8889` |
 | `config/loki-config.yaml` | Loki config — ruler with remote write to Prometheus |
-| `config/loki-rules/claude/rules.yaml` | Recording rules: derive session state from native OTEL events |
+| `config/loki-rules/fake/rules.yaml` | Recording rules: derive session state from native OTEL events |
 | `config/tempo.yaml` | Tempo trace storage (local backend) |
 | `config/grafana-datasources.yaml` | Auto-provisions Prometheus, Loki, Tempo datasources |
 | `dashboards/*.json` | Grafana dashboard JSON for import |
@@ -120,7 +120,7 @@ Standard labels on all: session_id, user_name, environment, terminal_type, servi
 
 ## Recording rules (Loki ruler → Prometheus)
 
-Loki recording rules in `config/loki-rules/claude/rules.yaml` derive session state from native Claude Code OTEL events and remote-write metrics to Prometheus. Used by `claude-dashboard` for state display.
+Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state from native Claude Code OTEL events and remote-write metrics to Prometheus. Used by `claude-dashboard` for state display.
 
 | Metric | Meaning | LogQL signal |
 |--------|---------|-------------|
@@ -128,7 +128,16 @@ Loki recording rules in `config/loki-rules/claude/rules.yaml` derive session sta
 | `claude_session_ready` | Stop is most recent event | `hook_execution_complete` with `hook_event=Stop` timestamp > activity timestamp |
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 
-Labels on all: `session_id`, `host_name`, `project`.
+Labels on all: `session_id`, `host_name`, `project`, `location`.
+
+### `location` label
+
+Normalized display-friendly path derived from `host_name` and `project` via `label_format` in each recording rule:
+- Sandboxes (`host_name` starts with `sandbox`): `~/sandboxes/<host_name>`
+- Local sessions: `/home/<user>/...` or `/Users/<user>/...` replaced with `~/...`
+- Non-home paths (`/tmp`, `/opt`): pass through unchanged
+
+Dashboards should use `location` instead of `project` for display. `project` is preserved as the raw value for filtering and debugging.
 
 ### Recording rule gotchas
 
