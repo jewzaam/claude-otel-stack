@@ -689,7 +689,7 @@
             "fixedColor": "green",
             "mode": "fixed"
           },
-          "decimals": 1,
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
