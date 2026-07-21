@@ -129,7 +129,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "max by (prompt_id, prompt_short, location, event_timestamp) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format prompt_short=`{{ printf \"%.200s\" .prompt }}`, location=`{{ if hasPrefix \"sandbox\" .host_name }}~/sandboxes/{{ .host_name }}{{ else }}{{ regexReplaceAll \"/home/[^/]+\" .project \"~\" }}{{ end }}` [$__range]))",
+          "expr": "max by (prompt_id, prompt_short, location, event_timestamp) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format prompt_short=`{{ printf \"%.200s\" .prompt }}`, location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix \"sandbox\" .host_name }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ else }}{{ regexReplaceAll \"/home/[^/]+\" .project \"~\" }}{{ end }}` [$__range]))",
           "queryType": "instant",
           "refId": "A"
         },
