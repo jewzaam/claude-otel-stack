@@ -806,7 +806,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name=~\"sandbox-.*\" | label_format project_clean=`{{ if .sandbox_source }}{{ .sandbox_source }}{{ else }}{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (label_replace(sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name!~\"sandbox-.*\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
+          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name=~\"sandbox-.*\" | label_format project_clean=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (label_replace(sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | host_name!~\"sandbox-.*\" | unwrap cost_usd [$__range])), \"project_clean\", \"$1\", \"project\", \"(.*?)(/[^/]*worktree[^/]*/.*|$)\"))",
           "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
