@@ -87,6 +87,8 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 - **Cost-by-skill attribution caveats**:
   - **Slash commands** (`/foo`) — exact attribution. The slash command IS the `user_prompt`, so all `api_request`s within that `prompt_id` belong to it. Sum cost per `prompt_id`.
   - **Skill tool invocations** (e.g., `superpowers:writing-plans`) — attribute full interaction cost to each Skill tool that ran in that interaction. If an interaction invokes multiple skills, total cost overcounts but average cost per invocation remains a useful signal.
+  - **`skill_name` on api_requests** — Claude Code sets `skill_name` structured metadata on api_request events during skill execution, including on subagent calls. Best general-purpose attribution field: covers 73-100% for agent-based skills, but only ~20% for web-heavy skills (web_search_tool and web_fetch_apply don't propagate skill_name). Plugin-provided skills appear as `skill_name="third-party"`. Use the `claude_skill_cost_usd` recording rule (Prometheus) for dashboard panels instead of prompt_id-based joins.
+  - **`trace_id` links subagent work** — subagents dispatched during a skill share the parent interaction's trace_id, even across different prompt_ids. However, trace grouping varies by skill implementation and continuation prompts' repl_main_thread calls get their own traces. Not reliable as sole attribution key.
 - **Tempo `claude_code.interaction` span carries `user_prompt` as an attribute** (e.g., `user_prompt: "/commit"`). Useful for trace-side attribution of slash commands without joining to Loki events.
 - **OTEL trace export tuning** — `OTEL_BSP_SCHEDULE_DELAY` default is 5000ms. Lowered in `bin/claude.env` to 2000ms with `OTEL_BSP_MAX_EXPORT_BATCH_SIZE=128` and `OTEL_LOGS_EXPORT_INTERVAL=2000` so completed child spans (`llm_request`, `tool`) and events surface faster in dashboards. Caveat: the root `claude_code.interaction` span does NOT close until the interaction ends; no config tweak changes this — long interactions remain invisible to "Interaction Traces" panels until completion.
 
@@ -120,15 +122,17 @@ Standard labels on all: session_id, user_name, environment, terminal_type, servi
 
 ## Recording rules (Loki ruler → Prometheus)
 
-Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state from native Claude Code OTEL events and remote-write metrics to Prometheus. Used by `claude-dashboard` for state display.
+Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state and cost attribution from native Claude Code OTEL events and remote-write metrics to Prometheus. Used by `claude-dashboard` for state display and skill cost panels.
 
 | Metric | Meaning | LogQL signal |
 |--------|---------|-------------|
 | `claude_session_working` | Activity count in last 60s | `api_request`, `tool_decision`, `tool_result`, `skill_activated` |
 | `claude_session_ready` | Stop is most recent event | `hook_execution_complete` with `hook_event=Stop` timestamp > activity timestamp |
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
+| `claude_skill_cost_usd` | Cost attributed to skill (1m window) | `api_request` with `skill_name!=""`, unwrap `cost_usd` |
 
-Labels on all: `session_id`, `host_name`, `project`, `location`.
+Labels on state metrics: `session_id`, `host_name`, `project`, `location`.
+Labels on skill cost: `session_id`, `skill_name`, `project`, `host_name`, `location`.
 
 ### `location` label
 

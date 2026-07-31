@@ -11,6 +11,34 @@
 # - count_over_time does not support by() grouping — wrap with sum by()
 
 groups:
+  - name: claude-skill-cost
+    interval: 1m
+    rules:
+      # SKILL_COST: cost attributed to skills via the skill_name field
+      # on api_request events. Claude Code sets skill_name during skill
+      # execution, including on subagent api_request calls.
+      #
+      # Covers 73-100% of cost for agent-based skills (review, dump).
+      # web_search_tool and web_fetch_apply don't propagate skill_name,
+      # so web-heavy skills (cited-research) undercount (~20%).
+      # Fix requires Claude Code OTEL change.
+      #
+      # "third-party" = plugin-provided skills (jewzaam-reviews, etc.)
+      #
+      # Dashboard: sum_over_time(claude_skill_cost_usd[$__range])
+      # ponytail: add token rules when needed, not before
+      - record: claude_skill_cost_usd
+        expr: |
+          sum by (session_id, skill_name, project, host_name, location) (
+            sum_over_time(
+              {service_name="claude-code"}
+              | event_name = "api_request"
+              | skill_name != ""
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              | unwrap cost_usd [1m]
+            )
+          )
+
   - name: claude-session-state
     interval: 5s
     rules:
