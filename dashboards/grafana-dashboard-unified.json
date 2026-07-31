@@ -1163,7 +1163,7 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
-      "description": "Cost attributed per interaction (prompt_id) for both slash commands (source=slash, exact attribution) and Skill-tool invocations (source=skill_tool, attributes full interaction cost \u2014 overcounts total if an interaction runs multiple skills, but avg_cost is the actionable signal).",
+      "description": "Cost per skill/slash-command via prompt_id join with cross-prompt attribution. First-party skills get additional cost from continuation prompts via skill_name on api_requests (zero-valued entries preserve correct invocation count). Third-party plugin skills use original prompt_id attribution only.",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -1256,7 +1256,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range]))",
+          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range])) or 0 * sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | skill_name!=\"\" | skill_name!=\"third-party\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | drop cost_usd, cost_usd_micros, duration_ms, model, query_source, effort, speed, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, request_id, event_sequence, event_timestamp, observed_timestamp, span_id, trace_id | label_format invocation_name=`/{{.skill_name}}`,source=\"slash\" [$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
