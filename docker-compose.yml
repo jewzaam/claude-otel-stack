@@ -5,9 +5,12 @@ services:
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:z
     ports:
-      - "4317:4317"
-      - "4318:4318"
-      - "8889:8889"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+      - "127.0.0.1:8889:8889"
+    networks:
+      otel:
+        ipv4_address: 172.30.0.10
     depends_on:
       - loki
       - tempo
@@ -22,7 +25,10 @@ services:
       - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:z
       - prometheus-data:/prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
+    networks:
+      otel:
+        ipv4_address: 172.30.0.11
     depends_on:
       - otel-collector
 
@@ -37,7 +43,10 @@ services:
         done
         exec /usr/bin/loki -config.file=/etc/loki/local-config.yaml
     ports:
-      - "3100:3100"
+      - "127.0.0.1:3100:3100"
+    networks:
+      otel:
+        ipv4_address: 172.30.0.12
     volumes:
       - ./config/loki-config.yaml:/etc/loki/local-config.yaml:z
       - ./config/loki-rules:/loki/rules:z
@@ -50,7 +59,10 @@ services:
       - ./config/tempo.yaml:/etc/tempo.yaml:z
       - tempo-data:/var/tempo
     ports:
-      - "3200:3200"
+      - "127.0.0.1:3200:3200"
+    networks:
+      otel:
+        ipv4_address: 172.30.0.13
 
   grafana:
     image: grafana/grafana:latest
@@ -58,7 +70,10 @@ services:
       - GF_AUTH_ANONYMOUS_ENABLED=true
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
+    networks:
+      otel:
+        ipv4_address: 172.30.0.14
     volumes:
       - ./config/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:z
       - grafana-data:/var/lib/grafana
@@ -78,8 +93,17 @@ services:
     volumes:
       - ./dashboards:/dashboards:z
       - ./bin/dashboard-sync.py:/dashboard-sync.py:ro,z
+    networks:
+      - otel
     command: python3 /dashboard-sync.py
     restart: on-failure
+
+networks:
+  otel:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
 
 volumes:
   prometheus-data:
