@@ -34,6 +34,20 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | `docs/tips.md` | Gotchas: SELinux, Loki structured metadata, LogQL patterns |
 | `docs/thoughts.md` | Design rationale, architecture options, signal inventory |
 
+## Network
+
+All services run on the `otel` bridge network (`172.30.0.0/24`) with static IPs. Host ports bind to `127.0.0.1` only — not reachable via `host.containers.internal` from sandbox containers.
+
+| Service | Static IP | Host Port |
+|---------|-----------|-----------|
+| otel-collector | 172.30.0.10 | 127.0.0.1:4317, :4318, :8889 |
+| prometheus | 172.30.0.11 | 127.0.0.1:9090 |
+| loki | 172.30.0.12 | 127.0.0.1:3100 |
+| tempo | 172.30.0.13 | 127.0.0.1:3200 |
+| grafana | 172.30.0.14 | 127.0.0.1:3000 |
+
+Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Access controlled by sandbox network policy — only policies with the IP:port entry can reach the services. Host sessions use `localhost` via the `127.0.0.1` binding.
+
 ## Key constraints
 
 - **Loki structured metadata** — OTLP attributes are stored as structured metadata, NOT labels. Only `service_name` is a label. Filter with `| field="value"` after the stream selector, not inside `{}`. `unwrap` works on numeric structured metadata fields (e.g., `sum(sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [1h]))` verified against live Loki — older note in `docs/tips.md` claiming otherwise is wrong). Structured metadata fields support `=~` regex match operator, enabling Grafana variable substitution with "All" option (substitutes `.*`).
