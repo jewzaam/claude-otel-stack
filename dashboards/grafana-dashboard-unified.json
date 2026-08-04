@@ -521,7 +521,10 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
+          "direction": "backward",
+          "editorMode": "code",
           "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap output_tokens [$__range]))",
+          "queryType": "range",
           "refId": "A"
         }
       ],
@@ -770,7 +773,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 7,
+        "w": 8,
         "x": 0,
         "y": 4
       },
@@ -833,15 +836,62 @@
           },
           "decimals": 2,
           "unit": "currencyUSD"
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "local"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-work"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-personal"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
         "w": 5,
-        "x": 7,
+        "x": 8,
         "y": 4
       },
-      "id": 12,
+      "id": 25,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -873,14 +923,215 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
+          "direction": "backward",
           "editorMode": "code",
-          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
-          "legendFormat": "{{short_id}}",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name!~\"sandbox-.*\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "local",
+          "queryType": "range",
           "range": true,
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile=\"personal\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "sb-personal",
+          "queryType": "range",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile!=\"personal\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "sb-work",
+          "queryType": "range",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Cost by Session",
+      "title": "Cost by Environment",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "local"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "work"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "personal"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-work"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-personal"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 13,
+        "y": 4
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name!~\"sandbox-.*\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name!~\"sandbox-.*\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name!~\"sandbox-.*\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name!~\"sandbox-.*\" | unwrap cache_creation_tokens [$__range]))",
+          "legendFormat": "local",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile=\"personal\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile=\"personal\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile=\"personal\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile=\"personal\" | unwrap cache_creation_tokens [$__range]))",
+          "legendFormat": "sb-personal",
+          "queryType": "range",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile!=\"personal\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile!=\"personal\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile!=\"personal\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | host_name=~\"sandbox-.*\" | sandbox_profile!=\"personal\" | unwrap cache_creation_tokens [$__range]))",
+          "legendFormat": "sb-work",
+          "queryType": "range",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Tokens by Environment (Normalized)",
       "type": "piechart"
     },
     {
@@ -907,7 +1158,7 @@
       "gridPos": {
         "h": 8,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 4
       },
       "id": 9,
@@ -950,73 +1201,6 @@
         }
       ],
       "title": "Cost by Model",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "decimals": 2,
-          "unit": "currencyUSD"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 4
-      },
-      "id": 10,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "expr": "sum by (query_source) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "{{query_source}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Source",
       "type": "piechart"
     },
     {
@@ -1100,7 +1284,9 @@
               "tooltip": false,
               "viz": false
             }
-          }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
         }
       },
       "gridPos": {
@@ -1109,7 +1295,7 @@
         "x": 6,
         "y": 12
       },
-      "id": 15,
+      "id": 12,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -1141,21 +1327,14 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (command_name) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | command_source=\"custom\" [$__range]))",
-          "legendFormat": "/{{command_name}}",
+          "editorMode": "code",
+          "expr": "label_replace(sum by (session_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range])), \"short_id\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "legendFormat": "{{short_id}}",
+          "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "expr": "sum by (tool_parameters) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | tool_name=\"Skill\" [$__range]))",
-          "legendFormat": "{{tool_parameters}}",
-          "refId": "B"
         }
       ],
-      "title": "Skills Executed",
+      "title": "Cost by Session",
       "type": "piechart"
     },
     {
@@ -1711,7 +1890,7 @@
         "unwrappedColumns": false,
         "wrapLogMessage": true
       },
-      "pluginVersion": "13.0.1+security-01",
+      "pluginVersion": "13.0.1",
       "targets": [
         {
           "datasource": {
@@ -1723,48 +1902,6 @@
         }
       ],
       "title": "Prompt History",
-      "type": "logs"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 24,
-        "x": 0,
-        "y": 38
-      },
-      "id": 21,
-      "options": {
-        "dedupStrategy": "none",
-        "enableInfiniteScrolling": false,
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showControls": false,
-        "showFieldSelector": false,
-        "showLabels": false,
-        "showLevel": true,
-        "showTime": true,
-        "sortOrder": "Ascending",
-        "timestampResolution": "ms",
-        "unwrappedColumns": false,
-        "wrapLogMessage": true
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "expr": "{service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | line_format \"model={{.model}} cost=${{.cost_usd}} duration={{.duration_ms}}ms tokens: in={{.input_tokens}} out={{.output_tokens}} cache_read={{.cache_read_tokens}} source={{.query_source}}\"",
-          "refId": "A"
-        }
-      ],
-      "title": "API Requests",
       "type": "logs"
     }
   ],
