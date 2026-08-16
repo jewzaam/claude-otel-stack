@@ -21,7 +21,7 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 |------|---------|
 | `docker-compose.yml` | All 5 services with `:z` SELinux bind mounts |
 | `bin/claude-wrapper.sh` | Wrapper script — sources claude.env, execs claude with passthrough args |
-| `bin/claude.env` | OTEL env vars including dynamic `project=$(pwd)` |
+| `bin/claude.env` | OTEL env vars including dynamic `project=$(pwd)` (host sessions only) |
 | `bin/dashboard-sync.py` | Bidirectional sync between dashboard JSON files and Grafana API |
 | `systemd/claude-otel-stack.service` | systemd user unit for autostart |
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
@@ -57,9 +57,18 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 - **Prefer Loki for cost and token panels** — `increase(claude_code_cost_usage_USD_total[$__range])` produces oscillating values that mismatch Claude Code's statusline (sparse counter increments + extrapolation at series boundaries + ephemeral `session_id` label dimension). `sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [...])` is exact per-event sum with no extrapolation. Same applies to all 4 token types (`input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`).
 - **Prometheus for numbers** — cost, tokens, active time come as proper metrics. Use Prometheus for numeric aggregation, Loki for counting and filtering events.
 - **`:z` on all bind mounts** — required for rootless podman on SELinux (Fedora).
-- **`project` label** — set dynamically via `$(pwd)` in `claude-wrapper.sh` at launch time. Only available on sessions launched via the wrapper.
+- **`project` label** — `$(pwd)` at launch for host sessions; sandbox sessions use the sandbox's host-side directory, injected as `SANDBOX_HOST_DIR` (in-container `$(pwd)` is `/sandbox/source/` for every sandbox). Only available on sessions launched via the wrapper.
 - **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed. Adding a new UID→filename mapping in `dashboard-sync.py` requires restarting the container (`podman-compose restart dashboard-sync`); existing dashboard edits sync without restart.
-- **`host.name=$(hostname)`** — added to `OTEL_RESOURCE_ATTRIBUTES` in `claude.env` for future multi-host aggregation.
+- **`host.name` is always the machine, never the sandbox.** Host sessions get
+  `$(hostname)` from `claude.env`. Sandbox sessions get the *creating host's*
+  hostname, injected as `SANDBOX_HOST_NAME` into `/sandbox/.env` by
+  `openshell-sandbox`, because in-container `hostname` is `sandbox-sb-<hash>` —
+  the sandbox, not the machine. Sandbox identity lives in `sandbox_source`.
+  **Use `sandbox_source` presence, never a `host_name` pattern, to tell sandbox
+  from local.** Dashboards used `host_name=~"sandbox-.*"` and it silently
+  stopped matching when this changed. `sandbox_source` is set for every sandbox
+  regardless of profile, and was set before the change too, so it works across
+  the retention boundary.
 
 ## Loki deployment gotchas
 
@@ -160,10 +169,16 @@ metrics carry `headless="true"`; absent label = interactive.
 
 ### `location` label
 
-Normalized display-friendly path derived from `host_name` and `project` via `label_format` in each recording rule:
-- Sandboxes (`host_name` starts with `sandbox`): `~/sandboxes/<host_name>`
+Normalized display-friendly path derived from `sandbox_source` and `project` via `label_format` in each recording rule:
+- Sandboxes (`sandbox_source` set): `~/sandboxes/<sandbox_source>`
 - Local sessions: `/home/<user>/...` or `/Users/<user>/...` replaced with `~/...`
 - Non-home paths (`/tmp`, `/opt`): pass through unchanged
+
+The `hasPrefix "sandbox" .host_name` middle branch is dead for current data and
+kept only for series predating the `host.name` change. Sandbox `project` is now
+the sandbox's directory on the host (`~/sandboxes/<name>` after the home-prefix
+rewrite), so both branches agree — it used to be `/sandbox/source/` for every
+sandbox on every machine, which collapsed them into one `$project` entry.
 
 Dashboards should use `location` instead of `project` for display. `project` is preserved as the raw value for filtering and debugging.
 
