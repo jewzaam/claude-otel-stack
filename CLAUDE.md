@@ -50,6 +50,8 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 
 ## Key constraints
 
+- **This repo is upstream for the k3s deployment** — `setup-k3s` generates its copies from here via `make build-claude-loki-rules` and `make build-claude-dashboards` (both under `make build-claude-otel`), which the user runs. Edit `config/loki-rules/` and `dashboards/` here only; `setup-k3s/gitops/apps/` is generated and gets overwritten. Nothing is live on the cluster until that sync runs and the Loki ruler reloads.
+
 - **Dashboard changes require query validation** — after ANY dashboard JSON edit, validate every modified query against the OTEL stack (Prometheus, Loki, Tempo) if reachable. Check: correct separator per query language (`,` for PromQL, `|` for LogQL, `&&` for TraceQL), balanced braces/parens, include/exclude filter parity, and that queries actually return data. Do this automatically — never wait to be asked.
 
 - **Loki structured metadata** — OTLP attributes are stored as structured metadata, NOT labels. Only `service_name` is a label. Filter with `| field="value"` after the stream selector, not inside `{}`. `unwrap` works on numeric structured metadata fields (e.g., `sum(sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [1h]))` verified against live Loki — older note in `docs/tips.md` claiming otherwise is wrong). Structured metadata fields support `=~` regex match operator, enabling Grafana variable substitution with "All" option (substitutes `.*`).
@@ -64,11 +66,19 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
   hostname, injected as `SANDBOX_HOST_NAME` into `/sandbox/.env` by
   `openshell-sandbox`, because in-container `hostname` is `sandbox-sb-<hash>` —
   the sandbox, not the machine. Sandbox identity lives in `sandbox_source`.
-  **Use `sandbox_source` presence, never a `host_name` pattern, to tell sandbox
-  from local.** Dashboards used `host_name=~"sandbox-.*"` and it silently
-  stopped matching when this changed. `sandbox_source` is set for every sandbox
-  regardless of profile, and was set before the change too, so it works across
-  the retention boundary.
+  **Use `sandbox_source` presence, never a `host_name` pattern or a `project`
+  path, to tell sandbox from local.** Dashboards used `host_name=~"sandbox-.*"`
+  and it silently stopped matching when this changed. `sandbox_source` is an
+  injected env var, absent on host sessions no matter what directory they run
+  in — including a host session inside `~/sandboxes/<name>/`, which a
+  path-based test would misclassify. It is set for every sandbox regardless of
+  profile, and was set before the change too, so it works across the retention
+  boundary. Verified: `sandbox_source=~".+"` and `sandbox_source=""` partition
+  api_request events exactly.
+- **`sandbox_openshell_name`** (`sb-<hash>`) is the only label that joins a
+  session to `openshell sandbox list`, its container, and the
+  `openshell.ai/sandbox-name` podman label. `sandbox_source` is the friendly
+  name and cannot. Not used by any dashboard yet.
 
 ## Loki deployment gotchas
 
@@ -156,8 +166,27 @@ Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 | `claude_skill_cost_usd` | Cost attributed to skill (1m window) | `api_request` with `skill_name!=""`, unwrap `cost_usd` |
 
-Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`.
-Labels on skill cost: `session_id`, `skill_name`, `project`, `host_name`, `location`.
+Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`, `sandbox_source`, `sandbox_openshell_name`.
+Labels on skill cost: the same, plus `skill_name`.
+
+### The `by` clause is the public API
+
+A label missing from a rule's `by` clause **does not exist** for anyone
+downstream — the rule is where it is erased, and Prometheus never sees it. You
+cannot enumerate the consumers from this repo: `claude-dashboard` is a separate
+app, Grafana alerts and saved queries live in Grafana's DB rather than
+`dashboards/*.json`, and other machines ship to the same stack. Assume there is
+a consumer you cannot see.
+
+Include by default: a label 1:1 with `session_id` adds zero series, while
+omitting one costs a later rule change plus a second label discontinuity —
+existing series keep their old label set.
+
+`claude_session_ready` and `claude_session_permission` compare two aggregations
+with `>`. Each carries the label list **four times** — `max by (...)` and
+`) by (...)`, on both sides of the comparison. Miss one and the join silently
+returns no series instead of erroring. After editing, run each `expr` against
+Loki directly and check the series count is non-zero.
 
 `headless` is a self-made resource attribute: `bin/claude-wrapper.sh` (user's
 bin repo) appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
