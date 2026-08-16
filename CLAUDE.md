@@ -147,8 +147,16 @@ Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 | `claude_skill_cost_usd` | Cost attributed to skill (1m window) | `api_request` with `skill_name!=""`, unwrap `cost_usd` |
 
-Labels on state metrics: `session_id`, `host_name`, `project`, `location`.
+Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`.
 Labels on skill cost: `session_id`, `skill_name`, `project`, `host_name`, `location`.
+
+`headless` is a self-made resource attribute: `bin/claude-wrapper.sh` (user's
+bin repo) appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
+`-p`/`--print` runs. Claude Code emits no native headless marker (verified
+through 2.1.233 — `query_source` is version-unstable: 2.1.226 interactive
+main-thread requests emitted `repl_main_thread`, 2.1.233 emits `sdk`,
+identical to headless). claude-dashboard skips remote rows whose state
+metrics carry `headless="true"`; absent label = interactive.
 
 ### `location` label
 

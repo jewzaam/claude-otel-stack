@@ -47,7 +47,7 @@ groups:
       # Excludes housekeeping query sources that fire after Stop.
       - record: claude_session_working
         expr: |
-          sum by (session_id, host_name, project, location) (
+          sum by (session_id, host_name, project, location, headless) (
             count_over_time(
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
@@ -64,25 +64,25 @@ groups:
       # events in the window (freshly started then immediately stopped).
       - record: claude_session_ready
         expr: |
-          max by (session_id, host_name, project, location) (
+          max by (session_id, host_name, project, location, headless) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "Stop"
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project, location)
+            ) by (session_id, host_name, project, location, headless)
           )
           >
           (
-            max by (session_id, host_name, project, location) (
+            max by (session_id, host_name, project, location, headless) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|user_prompt|subagent_completed"
                 | query_source !~ "away_summary|compact|generate_session_title"
                 | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project, location)
+              ) by (session_id, host_name, project, location, headless)
             )
             or vector(0)
           )
@@ -92,25 +92,25 @@ groups:
       # a tool_result (permission granted) or Stop (denied/cancelled) fires.
       - record: claude_session_permission
         expr: |
-          max by (session_id, host_name, project, location) (
+          max by (session_id, host_name, project, location, headless) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "PermissionRequest"
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project, location)
+            ) by (session_id, host_name, project, location, headless)
           )
           >
           (
-            max by (session_id, host_name, project, location) (
+            max by (session_id, host_name, project, location, headless) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "tool_result|user_prompt"
                 | query_source !~ "away_summary|compact|generate_session_title"
                 | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project, location)
+              ) by (session_id, host_name, project, location, headless)
             )
             or vector(0)
           )
