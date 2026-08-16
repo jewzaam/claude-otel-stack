@@ -62,6 +62,8 @@ groups:
       # activity event. Truthy when Stop is newer.
       # The `or vector(0)` handles sessions with Stop but no activity
       # events in the window (freshly started then immediately stopped).
+      # The right side groups by session_id ONLY and joins with
+      # `on (session_id) group_left ()` — see "Compare on session_id".
       - record: claude_session_ready
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -73,16 +75,15 @@ groups:
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
           )
-          >
+          > on (session_id) group_left ()
           (
-            max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+            max by (session_id) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|user_prompt|subagent_completed"
                 | query_source !~ "away_summary|compact|generate_session_title"
-                | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+              ) by (session_id)
             )
             or vector(0)
           )
@@ -90,6 +91,8 @@ groups:
       # PERMISSION_REQUIRED: PermissionRequest is the most recent significant event.
       # Uses timestamp comparison like READY — permission stays active until
       # a tool_result (permission granted) or Stop (denied/cancelled) fires.
+      # The right side groups by session_id ONLY and joins with
+      # `on (session_id) group_left ()` — see "Compare on session_id".
       - record: claude_session_permission
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -101,16 +104,15 @@ groups:
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
           )
-          >
+          > on (session_id) group_left ()
           (
-            max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+            max by (session_id) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "tool_result|user_prompt"
                 | query_source !~ "away_summary|compact|generate_session_title"
-                | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [30m]
-              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+              ) by (session_id)
             )
             or vector(0)
           )
