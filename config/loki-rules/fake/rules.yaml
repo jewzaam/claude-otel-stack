@@ -62,8 +62,8 @@ groups:
       # activity event. Truthy when Stop is newer.
       # The `or vector(0)` handles sessions with Stop but no activity
       # events in the window (freshly started then immediately stopped).
-      # The right side groups by session_id ONLY and joins with
-      # `on (session_id) group_left ()` — see "Compare on session_id".
+      # The comparison runs keyed by session_id ONLY, and `and on (session_id)`
+      # filters the label-carrying series by it — see "Compare on session_id".
       - record: claude_session_ready
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -75,8 +75,17 @@ groups:
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
           )
-          > on (session_id) group_left ()
+          and on (session_id)
           (
+            max by (session_id) (
+              max_over_time(
+                {service_name="claude-code"}
+                | event_name = "hook_execution_complete"
+                | hook_event = "Stop"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+            >
             max by (session_id) (
               max_over_time(
                 {service_name="claude-code"}
@@ -85,14 +94,13 @@ groups:
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
-            or vector(0)
           )
 
       # PERMISSION_REQUIRED: PermissionRequest is the most recent significant event.
       # Uses timestamp comparison like READY — permission stays active until
       # a tool_result (permission granted) or Stop (denied/cancelled) fires.
-      # The right side groups by session_id ONLY and joins with
-      # `on (session_id) group_left ()` — see "Compare on session_id".
+      # The comparison runs keyed by session_id ONLY, and `and on (session_id)`
+      # filters the label-carrying series by it — see "Compare on session_id".
       - record: claude_session_permission
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -104,8 +112,17 @@ groups:
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
           )
-          > on (session_id) group_left ()
+          and on (session_id)
           (
+            max by (session_id) (
+              max_over_time(
+                {service_name="claude-code"}
+                | event_name = "hook_execution_complete"
+                | hook_event = "PermissionRequest"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+            >
             max by (session_id) (
               max_over_time(
                 {service_name="claude-code"}
@@ -114,5 +131,4 @@ groups:
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
-            or vector(0)
           )

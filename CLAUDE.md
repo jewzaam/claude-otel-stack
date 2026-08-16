@@ -184,18 +184,41 @@ existing series keep their old label set.
 
 ### Compare on `session_id`, never on the full label set
 
-`claude_session_ready` and `claude_session_permission` join their two sides
-with `> on (session_id) group_left ()`, and the right side groups by
-`session_id` alone. A plain `>` matches on *every* label, so the comparison
-only ever sees activity that carries the identical label set — and label sets
-change under you: adding a rule label, or a sandbox env refresh that starts
-emitting `sandbox_openshell_name` mid-session, splits one session into two
-shapes. The old shape then has a PermissionRequest that no later event can
-supersede, because every later event carries the new shape. Observed live: a
-session sat at `permission_required` for the full 30m window while its new
-shape was correctly `working`; only window expiry cleared it. Keep identity
-labels on the left side (they land on the emitted series) and keep the right
-side keyed by `session_id` only.
+`claude_session_ready` and `claude_session_permission` run their timestamp
+comparison keyed by `session_id` alone, then filter the label-carrying series
+with `and on (session_id) (<comparison>)`. A plain `>` between two fully
+labelled aggregations matches on *every* label, so the comparison only ever
+sees activity carrying the identical label set — and label sets change under
+you: adding a rule label, or a sandbox env refresh that starts emitting
+`sandbox_openshell_name` mid-session, splits one session into two shapes. The
+old shape then holds a PermissionRequest that no later event can supersede,
+because every later event carries the new shape. Observed live: a session sat
+at `permission_required` for a full 30m window while its new shape was
+correctly `working`; only window expiry cleared it.
+
+**Do not write `group_left ()` with an empty label list.** It is valid to the
+query API but the ruler round-trips every rule through Loki's serializer,
+which drops the empty parens — the following `(` is then read as the start of
+the `group_left` label list and evaluation dies with
+`parse error ... unexpected MAX, expecting IDENTIFIER or )`. Both rules
+loaded and failed exactly this way. `and on (session_id)` needs no
+`group_left`, so the trap does not arise; it also preserves the left side's
+value (the event timestamp) and label set.
+
+**Validate the round-trip, not just the query.** `/loki/api/v1/query`
+accepting an expression does not mean the ruler will:
+
+```bash
+# what the ruler will actually store and re-parse
+curl -sG "$LOKI/loki/api/v1/format_query" --data-urlencode "query=$EXPR"
+# feed that result back through /loki/api/v1/query — it must parse and
+# return the same series count as the original
+```
+
+After deploying, check health rather than assuming: `curl -s
+"$LOKI/prometheus/api/v1/rules"` reports per-rule `health` and `lastError`.
+A rule that fails to parse reports `health=err` and stops emitting — the
+metric goes empty, it does not go wrong.
 
 `claude_session_ready` and `claude_session_permission` compare two aggregations
 with `>`. Each carries the label list **four times** — `max by (...)` and
