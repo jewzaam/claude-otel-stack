@@ -182,6 +182,21 @@ Include by default: a label 1:1 with `session_id` adds zero series, while
 omitting one costs a later rule change plus a second label discontinuity —
 existing series keep their old label set.
 
+### Compare on `session_id`, never on the full label set
+
+`claude_session_ready` and `claude_session_permission` join their two sides
+with `> on (session_id) group_left ()`, and the right side groups by
+`session_id` alone. A plain `>` matches on *every* label, so the comparison
+only ever sees activity that carries the identical label set — and label sets
+change under you: adding a rule label, or a sandbox env refresh that starts
+emitting `sandbox_openshell_name` mid-session, splits one session into two
+shapes. The old shape then has a PermissionRequest that no later event can
+supersede, because every later event carries the new shape. Observed live: a
+session sat at `permission_required` for the full 30m window while its new
+shape was correctly `working`; only window expiry cleared it. Keep identity
+labels on the left side (they land on the emitted series) and keep the right
+side keyed by `session_id` only.
+
 `claude_session_ready` and `claude_session_permission` compare two aggregations
 with `>`. Each carries the label list **four times** — `max by (...)` and
 `) by (...)`, on both sides of the comparison. Miss one and the join silently
