@@ -86,7 +86,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-          "expr": "count(claude_session_working{project=~\"$project\"} > 0) or vector(0)",
+          "expr": "count(claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
           "instant": true,
           "refId": "A"
         }
@@ -120,7 +120,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-          "expr": "count(claude_session_ready{project=~\"$project\"} > 0) or vector(0)",
+          "expr": "count(claude_session_ready{project=~\"$project\"} > 0 unless claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
           "instant": true,
           "refId": "A"
         }
