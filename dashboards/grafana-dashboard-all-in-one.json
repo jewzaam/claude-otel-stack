@@ -22,6 +22,72 @@
   "panels": [
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 0,
+        "y": 0
+      },
+      "id": 403,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Time",
+      "type": "stat"
+    },
+    {
+      "datasource": {
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
@@ -51,7 +117,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 0,
+        "x": 3,
         "y": 0
       },
       "id": 404,
@@ -87,72 +153,6 @@
         }
       ],
       "title": "API Calls",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
-          },
-          "decimals": 1,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "s"
-        }
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 3,
-        "y": 0
-      },
-      "id": 403,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
-          "refId": "A"
-        }
-      ],
-      "title": "Active Time",
       "type": "stat"
     },
     {
@@ -498,7 +498,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "count(claude_session_working{project=~\"$project\"} > 0) or vector(0)",
+          "expr": "count(claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
           "instant": true,
           "refId": "A"
         }
@@ -564,7 +564,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "count(claude_session_ready{project=~\"$project\"} > 0) or vector(0)",
+          "expr": "count(claude_session_ready{project=~\"$project\"} > 0 unless claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
           "instant": true,
           "refId": "A"
         }
@@ -662,6 +662,42 @@
               {
                 "id": "custom.width",
                 "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_openshell_name"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_source"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
               }
             ]
           }
