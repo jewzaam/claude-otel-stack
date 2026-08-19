@@ -81,7 +81,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1d]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [1d]))",
           "legendFormat": "daily",
           "refId": "A"
         }
@@ -149,7 +149,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1d]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [1d]))",
           "hide": true,
           "legendFormat": "daily",
           "refId": "A"
@@ -227,7 +227,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cost_usd [1d]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [1d]))",
           "hide": true,
           "legendFormat": "daily",
           "refId": "A"
@@ -268,7 +268,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
-          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [1d]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap output_tokens [1d]))",
           "legendFormat": "daily",
           "refId": "A"
         }
@@ -299,7 +299,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
-          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [1d]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap output_tokens [1d]))",
           "hide": true,
           "legendFormat": "daily",
           "refId": "A"
@@ -337,7 +337,7 @@
       "targets": [
         {
           "datasource": { "type": "loki", "uid": "P8E80F9AEF21F6940" },
-          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | unwrap output_tokens [1d]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_creation_tokens [1d])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_read_tokens [1d])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap input_tokens [1d])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap output_tokens [1d]))",
           "hide": true,
           "legendFormat": "daily",
           "refId": "A"
@@ -356,7 +356,157 @@
   "preload": false,
   "refresh": "",
   "schemaVersion": 42,
-  "templating": { "list": [] },
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Host",
+        "multi": true,
+        "name": "host_name",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\"}, host_name)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Project (cwd)",
+        "multi": true,
+        "name": "project",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total, project)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "Local",
+        "name": "env_local",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "SB Work",
+        "name": "env_sb_work",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "SB Personal",
+        "name": "env_sb_personal",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Session ID",
+        "multi": true,
+        "name": "session_id",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\", host_name=~\"$host_name\"}, session_id)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      }
+    ]
+  },
   "time": {
     "from": "now-24h",
     "to": "now"
