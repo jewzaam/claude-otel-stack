@@ -28,24 +28,22 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
-          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "transparent",
                 "value": 0
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "green",
+                "value": 1
               }
             ]
           },
-          "unit": "s"
+          "unit": "short"
         }
       },
       "gridPos": {
@@ -54,11 +52,12 @@
         "x": 0,
         "y": 0
       },
-      "id": 403,
+      "id": 407,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
+        "noValue": "0",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -79,35 +78,34 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
+          "expr": "count(claude_session_ready{project=~\"$project\"} > 0 unless claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
+          "instant": true,
           "refId": "A"
         }
       ],
-      "title": "Active Time",
+      "title": "Ready",
       "type": "stat"
     },
     {
       "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "fixedColor": "green",
-            "mode": "fixed"
+            "mode": "thresholds"
           },
-          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "transparent",
                 "value": 0
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "blue",
+                "value": 1
               }
             ]
           },
@@ -120,11 +118,12 @@
         "x": 3,
         "y": 0
       },
-      "id": 404,
+      "id": 406,
       "options": {
-        "colorMode": "value",
+        "colorMode": "background",
         "graphMode": "none",
         "justifyMode": "auto",
+        "noValue": "0",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -142,17 +141,81 @@
       "targets": [
         {
           "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
           },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" [$__range]))",
-          "queryType": "range",
+          "expr": "count(claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
+          "instant": true,
           "refId": "A"
         }
       ],
-      "title": "API Calls",
+      "title": "Working",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 6,
+        "y": 0
+      },
+      "id": 405,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "noValue": "0",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "count(claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Permission Required",
       "type": "stat"
     },
     {
@@ -203,7 +266,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 6,
+        "x": 9,
         "y": 0
       },
       "id": 402,
@@ -270,7 +333,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 9,
+        "x": 12,
         "y": 0
       },
       "id": 400,
@@ -336,7 +399,7 @@
       "gridPos": {
         "h": 4,
         "w": 3,
-        "x": 12,
+        "x": 15,
         "y": 0
       },
       "id": 401,
@@ -382,88 +445,24 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "green",
+            "mode": "fixed"
           },
+          "decimals": 1,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "transparent",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "orange",
-                "value": 1
+                "color": "red",
+                "value": 80
               }
             ]
           },
-          "unit": "short"
-        }
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 3,
-        "x": 15,
-        "y": 0
-      },
-      "id": 405,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "noValue": "0",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "count(claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
-          "instant": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Permission Required",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "transparent",
-                "value": 0
-              },
-              {
-                "color": "blue",
-                "value": 1
-              }
-            ]
-          },
-          "unit": "short"
+          "unit": "s"
         }
       },
       "gridPos": {
@@ -472,12 +471,11 @@
         "x": 18,
         "y": 0
       },
-      "id": 406,
+      "id": 403,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
-        "noValue": "0",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -498,34 +496,35 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "count(claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
-          "instant": true,
+          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
           "refId": "A"
         }
       ],
-      "title": "Working",
+      "title": "Active Time",
       "type": "stat"
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "fixedColor": "green",
+            "mode": "fixed"
           },
+          "decimals": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "transparent",
+                "color": "green",
                 "value": 0
               },
               {
-                "color": "green",
-                "value": 1
+                "color": "red",
+                "value": 80
               }
             ]
           },
@@ -538,12 +537,11 @@
         "x": 21,
         "y": 0
       },
-      "id": 407,
+      "id": 404,
       "options": {
-        "colorMode": "background",
+        "colorMode": "value",
         "graphMode": "none",
         "justifyMode": "auto",
-        "noValue": "0",
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
@@ -561,15 +559,17 @@
       "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "count(claude_session_ready{project=~\"$project\"} > 0 unless claude_session_working{project=~\"$project\"} > 0 unless claude_session_permission{project=~\"$project\"} > 0) or vector(0)",
-          "instant": true,
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" [$__range]))",
+          "queryType": "range",
           "refId": "A"
         }
       ],
-      "title": "Ready",
+      "title": "API Calls",
       "type": "stat"
     },
     {
@@ -705,7 +705,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 14,
         "x": 0,
         "y": 4
       },
@@ -759,9 +759,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 12
+        "w": 10,
+        "x": 14,
+        "y": 4
       },
       "id": 409,
       "options": {
@@ -801,6 +801,137 @@
         }
       ],
       "title": "Cost by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 0,
+        "y": 12
+      },
+      "id": 413,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
+          "legendFormat": "{{language}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Edit Decisions by Language",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 5,
+        "y": 12
+      },
+      "id": 414,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" [$__range]))",
+          "legendFormat": "{{decision}} ({{source}})",
+          "refId": "A"
+        }
+      ],
+      "title": "Tool Decisions",
       "type": "piechart"
     },
     {
@@ -874,7 +1005,7 @@
       "gridPos": {
         "h": 8,
         "w": 5,
-        "x": 8,
+        "x": 12,
         "y": 12
       },
       "id": 410,
@@ -964,187 +1095,14 @@
               "viz": false
             }
           },
-          "unit": "short"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "local"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "work"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "personal"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "sb-work"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "sb-personal"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 5,
-        "x": 13,
-        "y": 12
-      },
-      "id": 411,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap cache_creation_tokens [$__range]))",
-          "legendFormat": "local",
-          "queryType": "range",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap cache_creation_tokens [$__range]))",
-          "legendFormat": "sb-personal",
-          "queryType": "range",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap output_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap cache_read_tokens [$__range])) + 2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap cache_creation_tokens [$__range]))",
-          "legendFormat": "sb-work",
-          "queryType": "range",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Tokens by Environment (Normalized)",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
           "decimals": 2,
           "unit": "currencyUSD"
         }
       },
       "gridPos": {
         "h": 8,
-        "w": 6,
-        "x": 18,
+        "w": 7,
+        "x": 17,
         "y": 12
       },
       "id": 412,
@@ -1187,137 +1145,6 @@
         }
       ],
       "title": "Cost by Model",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "unit": "short"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 0,
-        "y": 20
-      },
-      "id": 413,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\"}[$__range]))",
-          "legendFormat": "{{language}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Edit Decisions by Language",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          }
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 6,
-        "y": 20
-      },
-      "id": 414,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" [$__range]))",
-          "legendFormat": "{{decision}} ({{source}})",
-          "refId": "A"
-        }
-      ],
-      "title": "Tool Decisions",
       "type": "piechart"
     },
     {
@@ -1384,9 +1211,9 @@
         ]
       },
       "gridPos": {
-        "h": 8,
+        "h": 9,
         "w": 12,
-        "x": 12,
+        "x": 0,
         "y": 20
       },
       "id": 415,
@@ -1569,7 +1396,7 @@
         "type": "query"
       },
       {
-        "allowCustomValue": true,
+        "allowCustomValue": false,
         "current": {
           "text": "No",
           "value": "=~"
