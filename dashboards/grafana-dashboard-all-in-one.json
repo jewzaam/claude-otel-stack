@@ -755,15 +755,62 @@
           },
           "decimals": 2,
           "unit": "currencyUSD"
-        }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "local"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-work"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-personal"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 8,
-        "w": 10,
+        "w": 5,
         "x": 14,
         "y": 4
       },
-      "id": 409,
+      "id": 410,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -795,12 +842,111 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | label_format project_clean=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | label_format project_clean=`{{ regexReplaceAll \"/[^/]*worktree[^/]*/.*$\" (regexReplaceAll \"^(/home/[^/]+|/Users/[^/]+)\" .project \"~\") \"\" }}` | unwrap cost_usd [$__range]))",
-          "legendFormat": "{{project_clean}}",
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "local",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "sb-personal",
+          "queryType": "range",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "sb-work",
+          "queryType": "range",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Cost by Environment",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 19,
+        "y": 4
+      },
+      "id": 412,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
+          "legendFormat": "{{model_short}}",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Cost by Project",
+      "title": "Cost by Model",
       "type": "piechart"
     },
     {
@@ -953,62 +1099,15 @@
           },
           "decimals": 2,
           "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "local"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "super-light-blue",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "sb-work"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-yellow",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "sb-personal"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "light-purple",
-                  "mode": "fixed"
-                }
-              }
-            ]
-          }
-        ]
+        }
       },
       "gridPos": {
         "h": 8,
-        "w": 5,
+        "w": 12,
         "x": 12,
         "y": 12
       },
-      "id": 410,
+      "id": 409,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -1040,111 +1139,12 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "local",
-          "queryType": "range",
-          "range": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "sb-personal",
-          "queryType": "range",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "sb-work",
-          "queryType": "range",
-          "range": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Cost by Environment",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "decimals": 2,
-          "unit": "currencyUSD"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 7,
-        "x": 17,
-        "y": 12
-      },
-      "id": 412,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "editorMode": "code",
-          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
-          "legendFormat": "{{model_short}}",
-          "range": true,
+          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=~\".+\" | label_format project_clean=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile${negate_sandbox_profile}\"$sandbox_profile\" | sandbox_source=\"\" | label_format project_clean=`{{ regexReplaceAll \"/[^/]*worktree[^/]*/.*$\" (regexReplaceAll \"^(/home/[^/]+|/Users/[^/]+)\" .project \"~\") \"\" }}` | unwrap cost_usd [$__range]))",
+          "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
       ],
-      "title": "Cost by Model",
+      "title": "Cost by Project",
       "type": "piechart"
     },
     {
@@ -1333,31 +1333,6 @@
         },
         "hide": 0,
         "includeAll": true,
-        "label": "Project (cwd)",
-        "multi": true,
-        "name": "project",
-        "options": [],
-        "query": "label_values(claude_code_cost_usage_USD_total, project)",
-        "refresh": 2,
-        "regex": "",
-        "regexApplyTo": "value",
-        "skipUrlSync": false,
-        "sort": 1,
-        "type": "query"
-      },
-      {
-        "allValue": ".*",
-        "allowCustomValue": true,
-        "current": {
-          "text": "All",
-          "value": "$__all"
-        },
-        "datasource": {
-          "type": "prometheus",
-          "uid": "PBFA97CFB590B2093"
-        },
-        "hide": 0,
-        "includeAll": true,
         "label": "Host",
         "multi": true,
         "name": "host_name",
@@ -1383,11 +1358,11 @@
         },
         "hide": 0,
         "includeAll": true,
-        "label": "Sandbox Profile",
+        "label": "Project (cwd)",
         "multi": true,
-        "name": "sandbox_profile",
+        "name": "project",
         "options": [],
-        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\", host_name=~\"$host_name\"}, sandbox_profile)",
+        "query": "label_values(claude_code_cost_usage_USD_total, project)",
         "refresh": 2,
         "regex": "",
         "regexApplyTo": "value",
@@ -1422,6 +1397,31 @@
         "skipUrlSync": false,
         "type": "custom",
         "valuesFormat": "csv"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Sandbox Profile",
+        "multi": true,
+        "name": "sandbox_profile",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\", host_name=~\"$host_name\"}, sandbox_profile)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
       },
       {
         "allValue": ".*",
