@@ -940,7 +940,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*).*\"))",
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))",
           "legendFormat": "{{model_short}}",
           "range": true,
           "refId": "A"
