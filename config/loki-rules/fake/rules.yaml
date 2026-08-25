@@ -45,12 +45,18 @@ groups:
       # WORKING: activity events in the last 60s.
       # Includes main thread and subagent events (same session_id).
       # Excludes housekeeping query sources that fire after Stop.
+      #
+      # `user_prompt` is in this list because it is what ends READY: the
+      # instant a prompt outranks the last Stop, claude_session_ready goes
+      # false. Without it here, a session prompted after >60s idle is in NO
+      # state metric until its first api_request lands — measured against live
+      # Loki, median 21s and up to 80s — and claude-dashboard drops the row.
       - record: claude_session_working
         expr: |
           sum by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
             count_over_time(
               {service_name="claude-code"}
-              | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed"
+              | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
               | query_source !~ "away_summary|compact|generate_session_title"
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               [60s]

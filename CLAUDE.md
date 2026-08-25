@@ -161,7 +161,7 @@ Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state
 
 | Metric | Meaning | LogQL signal |
 |--------|---------|-------------|
-| `claude_session_working` | Activity count in last 60s | `api_request`, `tool_decision`, `tool_result`, `skill_activated` |
+| `claude_session_working` | Activity count in last 60s | `api_request`, `tool_decision`, `tool_result`, `skill_activated`, `subagent_completed`, `user_prompt` |
 | `claude_session_ready` | Stop is most recent event | `hook_execution_complete` with `hook_event=Stop` timestamp > activity timestamp |
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 | `claude_skill_cost_usd` | Cost attributed to skill (1m window) | `api_request` with `skill_name!=""`, unwrap `cost_usd` |
@@ -255,4 +255,5 @@ Dashboards should use `location` instead of `project` for display. `project` is 
 - **Filter `event_name = "hook_execution_complete"`** for real hook events — `hook_registered` events also carry `hook_event` labels but are session-start metadata, not firings.
 - **`count_over_time` needs `sum by` wrapper** — `count_over_time` does not support `by()` grouping directly.
 - **Prometheus remote write receiver** must be enabled via `--web.enable-remote-write-receiver` flag on the Prometheus container.
+- **`user_prompt` must be in the WORKING rule's event list.** It is what ends READY (`claude_session_ready` compares Stop against activity, and `user_prompt` is activity). Leave it out of WORKING and a session prompted after >60s idle falls into *no* state metric until its first `api_request` — measured against live Loki, median 21s and up to 80s — and `claude-dashboard` drops the remote row for that window.
 - **Exclude housekeeping events from WORKING and READY rules** — both rules filter `query_source !~ "away_summary|compact|generate_session_title"` from activity events. These housekeeping events fire after Stop and would block READY detection by having a newer timestamp than the Stop event.
