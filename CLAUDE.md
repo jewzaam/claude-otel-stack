@@ -75,6 +75,17 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
   profile, and was set before the change too, so it works across the retention
   boundary. Verified: `sandbox_source=~".+"` and `sandbox_source=""` partition
   api_request events exactly.
+- **`sandbox_profile`** (`work`, `personal`, `home`) is set on every sandbox
+  session and absent on host sessions. **Never bucket environments by a
+  hardcoded profile name.** Dashboards used `sandbox_profile!="personal"` as a
+  stand-in for "work", so when the `home` profile was added its sessions
+  silently landed in the work bucket. Dashboards now derive the bucket in-query
+  (`label_format env=` → `sb-<profile>` or `local`) and pick profiles through a
+  `label_values(claude_code_cost_usage_USD_total, sandbox_profile)` template
+  variable, so a new profile shows up without a dashboard edit. Verified live:
+  no series carries `sandbox_source` without `sandbox_profile`, so filtering the
+  sandbox branch on profile loses nothing. Local sessions have no profile label
+  and are gated separately by the `Local` switch.
 - **`sandbox_openshell_name`** (`sb-<hash>`) is the only label that joins a
   session to `openshell sandbox list`, its container, and the
   `openshell.ai/sandbox-name` podman label. `sandbox_source` is the friendly
@@ -96,6 +107,7 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 
 - **TraceQL attribute prefixes** — resource attributes use `resource.` prefix (e.g., `resource.project`), span attributes use `span.` prefix (e.g., `span.session.id`). Do NOT backtick-quote dotted attribute names in Grafana — Tempo API accepts backticks but Grafana's TraceQL parser rejects them. Use `span.session.id` not `` span.`session.id` ``.
 - **`label_replace` regex alternation** — `(group1)|(group2)` only fills `$1` when group1 matches; if group2 matches, `$1` is empty. Use single capture group with `$` anchor instead. Example for worktree path stripping: `(.*?)(/[^/]*worktree[^/]*/.*|$)`.
+- **`.*` as an alternation branch is dropped by Loki** — `| env=~".*|local"` matches only `local`, while `| env=~".*"`, `| env=~".+|local"` and `| env=~"sb-.*|local"` all match everything. Loki's regex simplifier mis-handles a bare `.*` branch. Any template variable substituted into an alternation must set `allValue` to `.+`, not the usual `.*`. Verified live against Loki on all five forms.
 - **`count_over_time` on Loki** — returns one count per stream. Wrap with `sum()` for a single aggregate number in stat panels.
 - **`increase(metric[$__range])`** — works on historical data in Prometheus; series persist in storage past the staleness window. Only instant queries on raw counters miss expired series. Use `increase(...[$__range])` for stat panels covering the full dashboard time range. `increase()` uses linear interpolation, producing float results even from integer counters — wrap with `round()` for panels where integer display is expected (e.g., lines of code).
 - **Avoid fixed `decimals` on stat panels using `short` unit** — Grafana's `short` unit auto-scales with SI suffixes (k, M, G). Setting `decimals: 0` truncates the scaled value (e.g., `1.2k` becomes `1k`). Omit the `decimals` field to let Grafana auto-format.
@@ -168,6 +180,12 @@ Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state
 
 Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`, `sandbox_source`, `sandbox_openshell_name`.
 Labels on skill cost: the same, plus `skill_name`.
+
+`sandbox_profile` is deliberately absent. The four session-state panels in
+`grafana-dashboard-all-in-one.json` therefore show every profile regardless of
+the dashboard's `Sandbox Profile` selector. Adding it to the `by` clauses would
+cost no extra series (it is 1:1 with `session_id`) — it was left out to avoid a
+ruler redeploy, not because it is wrong.
 
 ### The `by` clause is the public API
 

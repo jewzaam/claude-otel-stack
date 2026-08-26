@@ -294,7 +294,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "round(sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile!=\"personal\"}[$__range]) * $env_sb_work or increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=\"personal\"}[$__range]) * $env_sb_personal))",
+          "expr": "round(sum by (type) (increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_lines_of_code_count_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=~\"$sandbox_profile\"}[$__range])))",
           "legendFormat": "{{type}}",
           "refId": "A"
         }
@@ -361,7 +361,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [$__range]))",
+          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap cost_usd [$__range]))",
           "refId": "A"
         }
       ],
@@ -429,7 +429,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap output_tokens [$__range]))",
+          "expr": "2 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap cache_creation_tokens [$__range])) + 0.1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap cache_read_tokens [$__range])) + 1 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap input_tokens [$__range])) + 5 * sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap output_tokens [$__range]))",
           "queryType": "range",
           "refId": "A"
         }
@@ -496,7 +496,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile!=\"personal\"}[$__range]) * $env_sb_work or increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=\"personal\"}[$__range]) * $env_sb_personal)",
+          "expr": "sum(increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_active_time_seconds_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=~\"$sandbox_profile\"}[$__range]))",
           "refId": "A"
         }
       ],
@@ -564,7 +564,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"[$__range]))",
+          "expr": "sum(count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"[$__range]))",
           "queryType": "range",
           "refId": "A"
         }
@@ -801,6 +801,21 @@
                 }
               }
             ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-home"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
           }
         ]
       },
@@ -844,37 +859,11 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| sandbox_source=\"\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "local",
+          "expr": "sum by (env) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "{{env}}",
           "queryType": "range",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| sandbox_source=~\".+\" | sandbox_profile=\"personal\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "sb-personal",
-          "queryType": "range",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "direction": "backward",
-          "editorMode": "code",
-          "expr": "sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| sandbox_source=~\".+\" | sandbox_profile!=\"personal\" | unwrap cost_usd [$__range]))",
-          "legendFormat": "sb-work",
-          "queryType": "range",
-          "range": true,
-          "refId": "C"
         }
       ],
       "title": "Cost by Environment",
@@ -940,7 +929,7 @@
             "uid": "P8E80F9AEF21F6940"
           },
           "editorMode": "code",
-          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))",
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))",
           "legendFormat": "{{model_short}}",
           "range": true,
           "refId": "A"
@@ -1007,7 +996,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile!=\"personal\"}[$__range]) * $env_sb_work or increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=\"personal\"}[$__range]) * $env_sb_personal)",
+          "expr": "sum by (language) (increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=\"\"}[$__range]) * $env_local or increase(claude_code_code_edit_tool_decision_total{session_id=~\"$session_id\", project=~\"$project\", host_name=~\"$host_name\", sandbox_source=~\".+\", sandbox_profile=~\"$sandbox_profile\"}[$__range]))",
           "legendFormat": "{{language}}",
           "refId": "A"
         }
@@ -1072,7 +1061,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"[$__range]))",
+          "expr": "sum by (decision, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"tool_decision\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"[$__range]))",
           "legendFormat": "{{decision}} ({{source}})",
           "refId": "A"
         }
@@ -1139,7 +1128,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| sandbox_source=~\".+\" | label_format project_clean=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| sandbox_source=\"\" | label_format project_clean=`{{ regexReplaceAll \"/[^/]*worktree[^/]*/.*$\" (regexReplaceAll \"^(/home/[^/]+|/Users/[^/]+)\" .project \"~\") \"\" }}` | unwrap cost_usd [$__range]))",
+          "expr": "sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| sandbox_source=~\".+\" | label_format project_clean=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}~/sandboxes/{{ regexReplaceAll \"^sandbox-\" .host_name \"\" }}{{ end }}` | unwrap cost_usd [$__range])) or sum by (project_clean) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| sandbox_source=\"\" | label_format project_clean=`{{ regexReplaceAll \"/[^/]*worktree[^/]*/.*$\" (regexReplaceAll \"^(/home/[^/]+|/Users/[^/]+)\" .project \"~\") \"\" }}` | unwrap cost_usd [$__range]))",
           "legendFormat": "{{project_clean}}",
           "refId": "A"
         }
@@ -1234,7 +1223,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| unwrap cost_usd [$__range]))",
+          "expr": "sum by (prompt_id) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| unwrap cost_usd [$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1245,7 +1234,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range])) or 0 * sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | skill_name!=\"\" | skill_name!=\"third-party\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if not .sandbox_source }}$env_local{{ else if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else }}$env_sb_work{{ end }}` | env_on=\"1\"| drop cost_usd, cost_usd_micros, duration_ms, model, query_source, effort, speed, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, request_id, event_sequence, event_timestamp, observed_timestamp, span_id, trace_id | label_format invocation_name=`/{{.skill_name}}`,source=\"slash\" [$__range]))",
+          "expr": "sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"user_prompt\" | command_source=\"custom\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| label_format invocation_name=`/{{.command_name}}`,source=\"slash\" [$__range]) or count_over_time({service_name=\"claude-code\"} | event_name=\"tool_result\" | tool_name=\"Skill\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| label_format invocation_name=`{{ regexReplaceAll \"^.*\\\"skill_name\\\":\\\"([^\\\"]+)\\\".*$\" .tool_parameters \"$1\" }}`,source=\"skill_tool\" [$__range])) or 0 * sum by (prompt_id, invocation_name, source) (count_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | skill_name!=\"\" | skill_name!=\"third-party\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\"| drop cost_usd, cost_usd_micros, duration_ms, model, query_source, effort, speed, input_tokens, output_tokens, cache_read_tokens, cache_creation_tokens, request_id, event_sequence, event_timestamp, observed_timestamp, span_id, trace_id | label_format invocation_name=`/{{.skill_name}}`,source=\"slash\" [$__range]))",
           "format": "table",
           "instant": true,
           "legendFormat": "",
@@ -1395,52 +1384,29 @@
         "type": "switch"
       },
       {
+        "allValue": ".+",
+        "allowCustomValue": true,
         "current": {
-          "selected": true,
-          "text": "1",
-          "value": "1"
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
         },
         "hide": 0,
-        "label": "SB Work",
-        "name": "env_sb_work",
-        "options": [
-          {
-            "selected": true,
-            "text": "1",
-            "value": "1"
-          },
-          {
-            "selected": false,
-            "text": "0",
-            "value": "0"
-          }
-        ],
+        "includeAll": true,
+        "label": "Sandbox Profile",
+        "multi": true,
+        "name": "sandbox_profile",
+        "options": [],
+        "query": "label_values(claude_code_cost_usage_USD_total{project=~\"$project\", host_name=~\"$host_name\"}, sandbox_profile)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
         "skipUrlSync": false,
-        "type": "switch"
-      },
-      {
-        "current": {
-          "selected": true,
-          "text": "1",
-          "value": "1"
-        },
-        "hide": 0,
-        "label": "SB Personal",
-        "name": "env_sb_personal",
-        "options": [
-          {
-            "selected": true,
-            "text": "1",
-            "value": "1"
-          },
-          {
-            "selected": false,
-            "text": "0",
-            "value": "0"
-          }
-        ],
-        "skipUrlSync": false,
-        "type": "switch"
+        "sort": 1,
+        "type": "query"
       },
       {
         "allValue": ".*",
