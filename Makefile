@@ -48,6 +48,16 @@ test-lint-compose:  ## Validate docker-compose.yml
 	fi
 
 local-up:  ## Start local Grafana on :3001 pointed at tailscale Prom/Loki/Tempo
+	@# When the bind-mount source is absent podman creates it as a DIRECTORY,
+	@# Grafana fails provisioning and exits, and :3001 just refuses connections
+	@# with nothing on stdout to say why. -f catches both missing and directory.
+	@if [ ! -f config/grafana-datasources.local.yaml ]; then \
+		echo "ERROR: config/grafana-datasources.local.yaml is missing (or podman left a directory there)."; \
+		echo "  rmdir config/grafana-datasources.local.yaml 2>/dev/null || true"; \
+		echo "  cp config/grafana-datasources.local.yaml.example config/grafana-datasources.local.yaml"; \
+		echo "  then edit the three URLs to your Prometheus / Loki / Tempo endpoints"; \
+		exit 1; \
+	fi
 	podman-compose -f docker-compose.local.yml up -d
 	@echo "Grafana: http://localhost:3001"
 

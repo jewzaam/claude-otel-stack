@@ -1302,6 +1302,260 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Review runs from the jewzaam-reviews orchestrator. Its child sessions carry only the review.* attributes, so host/location/session come from the parent Claude Code session joined on trace_id.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "started"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cost"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              },
+              {
+                "id": "decimals",
+                "value": 4
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tokens"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "short"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "wall"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 420,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "started"
+          }
+        ]
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "label_replace(min by (review_run_id, trace_id) (min_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | unwrap observed_timestamp [$__range]) by (review_run_id, trace_id)) / 1e6 * on (trace_id) group_left (host_name, location, session_id) ((sum by (trace_id, host_name, location, session_id) (count_over_time({service_name=\"claude-code\"} | review_run_id=\"\" | trace_id!=\"\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_on=`{{ if .sandbox_source }}1{{ else }}$env_local{{ end }}`,env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}`,location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll \"^(/home/[^/]+|/Users/[^/]+)\" .project \"~\" }}{{ end }}` | env_on=\"1\" | env=~\"sb-($sandbox_profile)|local\" [$__range])) * 0 + 1) and on (trace_id) (sum by (trace_id) (count_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" [$__range])) * 0 + 1)), \"session\", \"$1..\", \"session_id\", \"(.{8}).*\")",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (review_run_id) (sum_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | event_name=\"api_request\" | unwrap cost_usd [$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "2 * sum by (review_run_id) (sum_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])) + 0.1 * sum by (review_run_id) (sum_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + 1 * sum by (review_run_id) (sum_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + 5 * sum by (review_run_id) (sum_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | event_name=\"api_request\" | unwrap output_tokens [$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "(max by (review_run_id) (max_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | unwrap observed_timestamp [$__range]) by (review_run_id)) - min by (review_run_id) (min_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | unwrap observed_timestamp [$__range]) by (review_run_id))) / 1e9",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "count by (review_run_id) (sum by (review_run_id, lens) (count_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | review_stage=\"review\" | label_format lens=`{{ regexReplaceAll \"^([^/]+)/.*$\" .review_agent \"$1\" }}` [$__range]))) or 0 * sum by (review_run_id) (count_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" [$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "count by (review_run_id) (sum by (review_run_id, review_agent) (count_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" | review_stage=\"review\" [$__range]))) or 0 * sum by (review_run_id) (count_over_time({service_name=\"claude-code\"} | review_run_id!=\"\" [$__range]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": "",
+          "refId": "F"
+        }
+      ],
+      "title": "Code Reviews",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": {
+            "byField": "review_run_id",
+            "mode": "inner"
+          }
+        },
+        {
+          "id": "groupBy",
+          "options": {
+            "fields": {
+              "Value #A": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #B": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #C": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #D": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #E": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "Value #F": {
+                "aggregations": [
+                  "lastNotNull"
+                ],
+                "operation": "aggregate"
+              },
+              "host_name": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "location": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "review_run_id": {
+                "aggregations": [],
+                "operation": "groupby"
+              },
+              "session": {
+                "aggregations": [],
+                "operation": "groupby"
+              }
+            }
+          }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "indexByName": {
+              "Value #A (lastNotNull)": 0,
+              "Value #B (lastNotNull)": 7,
+              "Value #C (lastNotNull)": 8,
+              "Value #D (lastNotNull)": 9,
+              "Value #E (lastNotNull)": 5,
+              "Value #F (lastNotNull)": 6,
+              "host_name": 1,
+              "location": 2,
+              "review_run_id": 4,
+              "session": 3
+            },
+            "renameByName": {
+              "Value #A (lastNotNull)": "started",
+              "Value #B (lastNotNull)": "cost",
+              "Value #C (lastNotNull)": "tokens",
+              "Value #D (lastNotNull)": "wall",
+              "Value #E (lastNotNull)": "lenses",
+              "Value #F (lastNotNull)": "agents",
+              "host_name": "host",
+              "review_run_id": "run"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "preload": false,
