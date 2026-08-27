@@ -51,6 +51,19 @@ groups:
       # false. Without it here, a session prompted after >60s idle is in NO
       # state metric until its first api_request lands — measured against live
       # Loki, median 21s and up to 80s — and claude-dashboard drops the row.
+      #
+      # Orchestrated children (jewzaam-reviews `review` skill: headless
+      # `claude -p` agents stamped with the resource attribute
+      # `review.orchestrating_session_id`) are counted under the session that
+      # launched them, not their own. That session backgrounds the run and
+      # stops, so its own events cease and only the Stop hook remains — it
+      # reported READY for the entire 15-50 minute review while its agents
+      # burned dollars. Rewriting session_id (rather than adding a second
+      # metric) also keeps the children out of the dashboard as rows of their
+      # own: they are not sessions a user can attach to. Every other label on
+      # a child matches its parent — same env, same OTEL resource attributes —
+      # so parent and child events sum into one series with no duplicate label
+      # set. Verified against live Loki over a real review run.
       - record: claude_session_working
         expr: |
           sum by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -58,6 +71,7 @@ groups:
               {service_name="claude-code"}
               | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
               | query_source !~ "away_summary|compact|generate_session_title"
+              | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               [60s]
             )
