@@ -239,7 +239,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-          "expr": "(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 3)\nor\n(claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 1)",
+          "expr": "(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 3)\nor\n((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} > 0) * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 1)",
           "legendFormat": "{{session_id}} · {{project}}",
           "refId": "A"
         }
@@ -300,7 +300,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-          "expr": "(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 3)\nor\n(claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 1)",
+          "expr": "(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 3)\nor\n((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} > 0) * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\"} * 0 + 1)",
           "instant": true,
           "format": "table",
           "refId": "A"

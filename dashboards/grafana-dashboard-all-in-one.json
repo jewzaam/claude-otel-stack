@@ -727,7 +727,7 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "(claude_session_permission{project=~\"$project\"} * 0 + 3)\nor\n(claude_session_working{project=~\"$project\"} * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\"} * 0 + 1)",
+          "expr": "(claude_session_permission{project=~\"$project\"} * 0 + 3)\nor\n((claude_session_working{project=~\"$project\"} > 0) * 0 + 2)\nor\n(claude_session_ready{project=~\"$project\"} * 0 + 1)",
           "format": "table",
           "instant": true,
           "refId": "A"
