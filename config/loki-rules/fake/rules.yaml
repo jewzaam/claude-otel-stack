@@ -64,16 +64,48 @@ groups:
       # a child matches its parent — same env, same OTEL resource attributes —
       # so parent and child events sum into one series with no duplicate label
       # set. Verified against live Loki over a real review run.
+      #
+      # Padded with an explicit 0 (`or 0 * count_over_time(...[10m])`, same
+      # trick as claude-skill-cost's review lens count). Without it,
+      # count_over_time over an empty 60s window returns no series at all —
+      # the ruler just stops writing, it never writes false/0. Prometheus's
+      # default 5m query.lookback-delta then keeps serving the last real
+      # nonzero sample as "current" to any instant/range query for up to 5
+      # minutes after the session actually went idle. Verified live: session
+      # 75eb44eb-feb3-4278-906d-e8a972837ed5 went idle at 14:21:38Z (Stop hook
+      # 34ms after its last api_request) but still read WORKING=4 at
+      # 14:27:15Z. The pad writes a real 0 every 5s for up to 10m after the
+      # last activity, closing that window — any consumer must compare
+      # `claude_session_working > 0`, not check presence alone, or a padded
+      # idle session reads as working (grafana-dashboard-all-in-one.json's
+      # "Current Sessions" panel did this — see the `expr` at its `id: 408`
+      # panel, fixed alongside this rule). Same caveat applies to
+      # claude-dashboard or any other consumer of this metric.
       - record: claude_session_working
         expr: |
-          sum by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
-            count_over_time(
-              {service_name="claude-code"}
-              | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
-              | query_source !~ "away_summary|compact|generate_session_title"
-              | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
-              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
-              [60s]
+          (
+            sum by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+              count_over_time(
+                {service_name="claude-code"}
+                | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
+                | query_source !~ "away_summary|compact|generate_session_title"
+                | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
+                | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+                [60s]
+              )
+            )
+          )
+          or
+          (
+            0 * sum by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+              count_over_time(
+                {service_name="claude-code"}
+                | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
+                | query_source !~ "away_summary|compact|generate_session_title"
+                | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
+                | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+                [10m]
+              )
             )
           )
 
