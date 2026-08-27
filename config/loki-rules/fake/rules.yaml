@@ -84,6 +84,19 @@ groups:
       # events in the window (freshly started then immediately stopped).
       # The comparison runs keyed by session_id ONLY, and `and on (session_id)`
       # filters the label-carrying series by it — see "Compare on session_id".
+      #
+      # Orchestrated children are folded into their launching session here for
+      # the same reason as in WORKING, and folding them in BOTH rules is what
+      # makes it work. A child that finishes fires its own Stop hook, so with
+      # the rewrite in WORKING alone each child still published a
+      # claude_session_ready series under its own session_id — carrying the
+      # parent's sandbox labels, because it inherits the parent's environment.
+      # claude-dashboard maps every one of those to the same sandbox row via
+      # `sandbox_openshell_name`, applies them in poll order, and the last
+      # child's READY overwrites the parent's WORKING. Observed live: one
+      # orchestrator working, four children ready, row rendered ready.
+      # Folded in, a Stop only wins once every agent has stopped and the
+      # parent has stopped too — which is exactly when the review is over.
       - record: claude_session_ready
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -91,6 +104,7 @@ groups:
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "Stop"
+              | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
@@ -102,6 +116,7 @@ groups:
                 {service_name="claude-code"}
                 | event_name = "hook_execution_complete"
                 | hook_event = "Stop"
+                | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
@@ -111,6 +126,7 @@ groups:
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|user_prompt|subagent_completed"
                 | query_source !~ "away_summary|compact|generate_session_title"
+                | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
@@ -121,6 +137,14 @@ groups:
       # a tool_result (permission granted) or Stop (denied/cancelled) fires.
       # The comparison runs keyed by session_id ONLY, and `and on (session_id)`
       # filters the label-carrying series by it — see "Compare on session_id".
+      #
+      # Orchestrated children are DROPPED here rather than folded into their
+      # launching session as WORKING and READY do. Dropping them is what stops
+      # a child from publishing a permission series that claude-dashboard would
+      # map onto the parent's sandbox row. Folding would go further and hand
+      # the parent the child's permission state — wrong twice over: nobody can
+      # answer a headless agent's prompt, and PERMISSION_REQUIRED is sticky in
+      # the dashboard, so it would outlive the review until dismissed by hand.
       - record: claude_session_permission
         expr: |
           max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
@@ -128,6 +152,7 @@ groups:
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
               | hook_event = "PermissionRequest"
+              | review_orchestrating_session_id = ""
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
@@ -139,6 +164,7 @@ groups:
                 {service_name="claude-code"}
                 | event_name = "hook_execution_complete"
                 | hook_event = "PermissionRequest"
+                | review_orchestrating_session_id = ""
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
