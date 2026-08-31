@@ -1,4 +1,20 @@
-# OTEL for Claude Code — Thoughts and Local POC
+# OTEL for Claude Code and Codex — Thoughts and Local POC
+
+## Current status
+
+Claude Code and Codex both export successfully to this stack. Claude Code is configured by `bin/claude-wrapper.sh` and `bin/claude.env`. Codex uses native OTEL settings in the user-level `~/.codex/config.toml`:
+
+```toml
+[otel]
+environment = "dev"
+log_user_prompt = true
+exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
+metrics_exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
+```
+
+Codex logs appear in Loki and Codex metrics appear in Prometheus. Codex trace export is not enabled because traces have not been useful for this workflow. The collector still exposes OTLP HTTP on `4318` and retains the Tempo pipeline for clients that need traces.
+
+Codex telemetry routing must be configured in `~/.codex/config.toml`; project-local `.codex/config.toml` cannot override `otel`.
 
 ## What's Available
 

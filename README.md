@@ -1,6 +1,6 @@
 # claude-otel-stack
 
-Local OTEL stack for monitoring Claude Code sessions. Metrics, events, and traces via Grafana.
+Local OTEL stack for monitoring coding-agent sessions. Metrics and events via Grafana, with optional trace storage.
 
 Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-and-forget.
 
@@ -8,11 +8,12 @@ Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-
 
 ## How it Works
 
-A shell wrapper injects OTEL environment variables before launching Claude Code. Telemetry flows over OTLP gRPC to a local collector, which fans out to three backends. Grafana queries all three for unified dashboards.
+Claude Code uses a shell wrapper to inject OTEL environment variables. Codex uses its native OTEL configuration. Both can send telemetry over OTLP to the local collector, which fans out to Prometheus and Loki; Tempo is available for clients that export traces.
 
 ```mermaid
 flowchart LR
     CC["Claude Code"]
+    CX["Codex"]
     W["claude-wrapper.sh<br/><i>injects OTEL env vars</i>"]
     OC["OTEL Collector<br/>:4317"]
     P["Prometheus<br/><i>metrics</i>"]
@@ -22,6 +23,7 @@ flowchart LR
 
     W -- sources env --> CC
     CC -- "OTLP gRPC<br/>localhost:4317" --> OC
+    CX -- "OTLP gRPC<br/>localhost:4317" --> OC
     OC --> P
     OC --> L
     OC --> T
@@ -30,6 +32,7 @@ flowchart LR
     T --> G
 
     style CC fill:#6366f1,color:#fff
+    style CX fill:#2563eb,color:#fff
     style OC fill:#f59e0b,color:#000
     style G fill:#10b981,color:#fff
 ```
@@ -69,6 +72,30 @@ claude
 ```
 
 The wrapper sets OTEL env vars and injects `project=$(pwd)` at launch time, so each session is tagged with the directory it was started from. See `bin/claude-wrapper.sh` for the full list of vars.
+
+### Codex
+
+Codex has a native OpenTelemetry exporter. Configure it in the user-level `~/.codex/config.toml`; project-local `.codex/config.toml` files cannot set telemetry routing.
+
+```toml
+[otel]
+environment = "dev"
+log_user_prompt = true       # optional; exports raw prompts
+
+exporter = { otlp-grpc = {
+  endpoint = "http://localhost:4317"
+} }
+
+metrics_exporter = { otlp-grpc = {
+  endpoint = "http://localhost:4317"
+} }
+```
+
+The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex batches exports asynchronously, so exiting a session is useful when validating a new configuration.
+
+Codex does not need to export traces for this stack. The Tempo service and trace pipeline remain available, but the useful Codex signals currently land in Loki and Prometheus.
+
+See the [Codex observability and telemetry documentation](https://learn.chatgpt.com/docs/config-file/config-advanced#observability-and-telemetry) and [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference#otelmetrics_exporter).
 
 ## Autostart (optional)
 
@@ -121,7 +148,9 @@ The real `config/grafana-datasources.local.yaml` is gitignored — personal endp
 | Prometheus | 9090 |
 | Loki | 3100 |
 | Tempo | 3200 |
-| OTEL Collector | 4317 |
+| OTEL Collector (OTLP gRPC) | 4317 |
+| OTEL Collector (OTLP HTTP) | 4318 |
+| OTEL Collector (Prometheus scrape) | 8889 |
 
 ## Tear down
 
