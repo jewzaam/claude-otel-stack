@@ -210,3 +210,118 @@ groups:
               ) by (session_id)
             )
           )
+
+  - name: codex-session-state
+    interval: 5s
+    rules:
+      # Codex hooks are raw events. Derive state here, in the Loki ruler, and
+      # remote-write the result to Prometheus just like Claude. Comparing each
+      # event class with the latest event prevents an old READY or PERMISSION
+      # event from surviving a newer prompt/tool event.
+      - record: codex_session_ready
+        expr: |
+          max by (session_id, project, cwd, model) (
+            last_over_time(
+              {service_name="codex-hook-observer"}
+              | unwrap state [30m]
+            ) by (session_id, project, cwd, model)
+          ) == 1
+          or
+          (
+          max by (session_id, project, cwd, model) (
+            max_over_time(
+              {service_name="codex-hook-observer"}
+              | hook_event_name =~ "SessionStart|Stop"
+              | unwrap observed_timestamp [30m]
+            ) by (session_id, project, cwd, model)
+          )
+          and on (session_id)
+          (
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | hook_event_name =~ "SessionStart|Stop"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+            ==
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+          )
+          )
+
+      - record: codex_session_working
+        expr: |
+          max by (session_id, project, cwd, model) (
+            last_over_time(
+              {service_name="codex-hook-observer"}
+              | unwrap state [30m]
+            ) by (session_id, project, cwd, model)
+          ) == 2
+          or
+          (
+          max by (session_id, project, cwd, model) (
+            max_over_time(
+              {service_name="codex-hook-observer"}
+              | hook_event_name =~ "UserPromptSubmit|PreToolUse|PostToolUse|PreCompact|PostCompact|SubagentStart|SubagentStop"
+              | unwrap observed_timestamp [30m]
+            ) by (session_id, project, cwd, model)
+          )
+          and on (session_id)
+          (
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | hook_event_name =~ "UserPromptSubmit|PreToolUse|PostToolUse|PreCompact|PostCompact|SubagentStart|SubagentStop"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+            ==
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+          )
+          )
+
+      - record: codex_session_permission
+        expr: |
+          max by (session_id, project, cwd, model) (
+            last_over_time(
+              {service_name="codex-hook-observer"}
+              | unwrap state [30m]
+            ) by (session_id, project, cwd, model)
+          ) == 3
+          or
+          (
+          max by (session_id, project, cwd, model) (
+            max_over_time(
+              {service_name="codex-hook-observer"}
+              | hook_event_name = "PermissionRequest"
+              | unwrap observed_timestamp [30m]
+            ) by (session_id, project, cwd, model)
+          )
+          and on (session_id)
+          (
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | hook_event_name = "PermissionRequest"
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+            ==
+            max by (session_id) (
+              max_over_time(
+                {service_name="codex-hook-observer"}
+                | unwrap observed_timestamp [30m]
+              ) by (session_id)
+            )
+          )
+          )

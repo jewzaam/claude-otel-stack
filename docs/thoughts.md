@@ -16,6 +16,18 @@ Codex logs appear in Loki and Codex metrics appear in Prometheus. Codex trace ex
 
 Codex telemetry routing must be configured in `~/.codex/config.toml`; project-local `.codex/config.toml` cannot override `otel`.
 
+## Design Rationale
+
+Claude Code and Codex converge on one OTEL stack through distinct paths: Claude uses its native exporter configuration through the wrapper, while Codex uses native OTEL where available and hook-based adapters for signals that need shaping. This keeps the backends and dashboards shared without pretending that the harnesses emit identical data.
+
+Codex hooks remain raw. Loki recording rules own the session-state policy, producing Prometheus metrics such as `codex_session_ready`, `codex_session_working`, and `codex_session_permission` for dashboards in the same style as Claude's. This leaves policy in one queryable, revisable layer instead of baking dashboard-specific state decisions into the hook script.
+
+The Codex `conversation_id` (reported as `session_id` in the telemetry used here) is the durable identifier for a running conversation. The working directory can change through `/cd`, so it must not be treated as immutable session metadata. The wrapper captures the launch-time project identity separately, allowing `project` to remain stable while the hook payload's current `cwd` changes.
+
+Traces are deferred. They remain available in the stack for clients that find them useful, but they have not provided enough value in this workflow to make Codex trace export part of the baseline.
+
+Token and cost telemetry is harness-specific and must be verified against live exports rather than inferred from names or dashboard shape. Codex exposes token metrics, but there is currently no authoritative Codex cost field in this stack; Claude's cost metrics should not be assumed to have a Codex equivalent.
+
 ## What's Available
 
 Claude Code has native OpenTelemetry support. Three signal types:
