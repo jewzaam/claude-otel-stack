@@ -1,6 +1,6 @@
 # claude-otel-stack
 
-Local OTEL stack for monitoring coding-agent sessions. Metrics and events via Grafana, with optional trace storage.
+Local OTEL stack for monitoring Claude Code and Codex sessions. Metrics and events are available via Grafana, with optional trace storage.
 
 Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-and-forget.
 
@@ -23,7 +23,7 @@ flowchart LR
 
     W -- sources env --> CC
     CC -- "OTLP gRPC<br/>localhost:4317" --> OC
-    CX -- "OTLP gRPC<br/>localhost:4317" --> OC
+    CX -- "OTLP gRPC or HTTP<br/>4317 / 4318" --> OC
     OC --> P
     OC --> L
     OC --> T
@@ -91,7 +91,13 @@ metrics_exporter = { otlp-grpc = {
 } }
 ```
 
-The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex batches exports asynchronously, so exiting a session is useful when validating a new configuration.
+The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex token totals are available as `codex_turn_token_usage_sum{token_type="total"}`.
+
+The repository also contains source-controlled hook templates. Copy `codex/hooks.json` and `codex/observe-hook.py` to `~/.codex/` when enabling hook-based lifecycle telemetry. The hooks export raw lifecycle logs; session state is derived by Loki recording rules and written to Prometheus for Grafana dashboards. This keeps the exporter simple while allowing the state model to evolve independently.
+
+For endpoint routing, use the standard `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable when the endpoint is supplied by the environment, for example `http://localhost:4318`. Use OTLP gRPC on port `4317` when configuring `otlp-grpc`, or OTLP HTTP/protobuf on port `4318` when using HTTP exporters. Port `8889` is the collector's Prometheus scrape endpoint, not an OTLP ingest endpoint. A remote stack can use the same setting with its reachable collector URL.
+
+Codex batches exports asynchronously, so exiting a session is useful when validating a new configuration.
 
 Codex does not need to export traces for this stack. The Tempo service and trace pipeline remain available, but the useful Codex signals currently land in Loki and Prometheus.
 
@@ -112,12 +118,15 @@ http://localhost:3000 — no login required.
 Dashboards sync automatically — a sidecar container pushes JSON files to Grafana on startup and keeps them in sync bidirectionally. Edit a dashboard in the Grafana UI and the JSON file updates on disk. Edit the JSON file and Grafana picks up the change. No manual import needed.
 
 Available dashboards in `dashboards/`:
-- **`grafana-dashboard-unified.json`** — Unified (recommended daily driver — cost, tokens, skills, tools, traces, prompt history, API requests; filterable by project and session)
-- `grafana-dashboard.json` — Session Monitor (cost, tokens, cache ratio, active time)
-- `grafana-dashboard-cost.json` — Cost & Token Breakdown (cost by session/model/project, token usage, cache hit ratio, edit decisions)
-- `grafana-dashboard-events.json` — Event Analytics (event rates, tool usage, breakdowns by session/model/project)
-- `grafana-dashboard-skills.json` — Skill Usage (slash commands, Skill tool calls, decisions, activity over time)
-- `grafana-dashboard-session.json` — Session Detail (drill into a single session — cost, tokens, traces, prompt history, API requests; filterable by project)
+- **`grafana-dashboard-all-in-one.json`** — All-in-one Claude Code dashboard, mirrored for Codex as the shared daily-driver layout. Codex skill panes remain placeholders until Codex skill telemetry is reworked.
+- **`grafana-dashboard-codex.json`** — Codex-specific OTEL overview (tool calls, WebSocket requests, tokens, timing, prompts, events, and tool results)
+- `grafana-dashboard-unified.json` — Unified dashboard (cost, tokens, skills, tools, traces, prompt history, and API requests; filterable by project and session)
+- `grafana-dashboard-projections.json` — Projections and usage trends
+- `grafana-dashboard-prompts.json` — Prompt history and prompt analytics
+- `grafana-dashboard-quota.json` — Quota and usage information
+- `grafana-dashboard-sessions.json` — Session monitoring and session detail
+
+The all-in-one layout is shared across harnesses where the underlying signals are compatible. Codex skill panels are intentionally placeholders; Codex does not yet provide the same skill telemetry as Claude Code. Traces are optional and are not required for the Codex dashboards.
 
 ## Local Grafana (dashboard iteration against remote backends)
 

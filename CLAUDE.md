@@ -47,6 +47,13 @@ metrics_exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
 
 Codex exports structured logs and metrics. Its trace exporter is not required for this stack. Keep telemetry routing in the user config; Codex ignores `otel` in project-local `.codex/config.toml`.
 
+### Codex integration
+
+- Codex native OTEL is user-level configuration in `~/.codex/config.toml`. Do not edit `~/.codex/` from this repo.
+- `codex/hooks.json` and `codex/observe-hook.py` are source-controlled templates copied to `~/.codex/` by the user. The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
+- `bin/codex-wrapper.sh` pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`, and appends it to `OTEL_RESOURCE_ATTRIBUTES`.
+- Inherit the standard `OTEL_EXPORTER_OTLP_ENDPOINT` from the environment. Do not introduce a second endpoint variable for Codex.
+
 ## Network
 
 All services run on the `otel` bridge network (`172.30.0.0/24`) with static IPs. Host ports bind to `127.0.0.1` only — not reachable via `host.containers.internal` from sandbox containers.
@@ -290,6 +297,9 @@ Dashboards should use `location` instead of `project` for display. `project` is 
 
 ### Recording rule gotchas
 
+- Codex session state is derived by Loki recording rules (`codex_session_ready`, `codex_session_working`, `codex_session_permission`) and remote-written to Prometheus. Session panels must query those Prometheus metrics; do not use direct Loki table queries for session state.
+- Validate dashboard and recording-rule queries against the live Prometheus/Loki endpoints rather than guessing metric names or field shapes. Dashboard-sync pickup and Loki ruler reload are separate operations: an existing dashboard does not require a dashboard-sync restart, while changed recording rules do require the ruler to reload.
+- Codex token usage is `codex_turn_token_usage_sum{token_type="total"}`. Do not substitute guessed counter names such as `codex_turn_token_usage_input_tokens_total`.
 - **Use `observed_timestamp` not `event_sequence`** for time comparisons — `event_sequence` resets across session resumes (sandbox reconnects, `/resume`).
 - **Filter `event_name = "hook_execution_complete"`** for real hook events — `hook_registered` events also carry `hook_event` labels but are session-start metadata, not firings.
 - **`count_over_time` needs `sum by` wrapper** — `count_over_time` does not support `by()` grouping directly.

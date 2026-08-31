@@ -99,6 +99,16 @@ sum by (prompt_id, name, source) (
 - **Use Prometheus for**: time-series counter rates and long-range aggregations where you want OTEL metric semantics — cost, tokens, duration, and active time are all available as proper OTEL metrics with full label support.
 - Both backends carry cost and token data. Prometheus is best for counter rates; Loki is best for exact per-event sums and per-interaction attribution.
 
+### Codex Session Telemetry
+
+- **Use Loki ruler recording rules for session state** — direct Loki session-table queries caused Grafana to render `Value #A`. Record the derived session-state series in the Loki ruler, remote-write them to Prometheus, and use Prometheus instant table queries in Grafana.
+- Raw Codex hook logs carry `hook_event_name` and `observed_timestamp`. Session recording rules compare the latest event for each session to derive state. Keep compatibility with older Codex logs that already contain a numeric `state` field.
+- Query live Prometheus and Loki before changing dashboards. Confirm the metric names, labels, and raw structured metadata against the running stack instead of guessing.
+- The live Codex token metric is `codex_turn_token_usage_sum`, with `token_type` values `total`, `input`, `cached_input`, `output`, and `reasoning_output`. Guessed counter names such as `codex_turn_token_usage_input_tokens_total` and `codex_turn_token_usage_output_tokens_total` do not exist.
+- Trust and approval affect project hooks; user hooks are independent. A project hook may not fire until the project is trusted or its approval is accepted.
+- `/cd` changes the Codex process's current working directory, but the wrapper pins the durable project identity so project metadata does not change with `/cd`.
+- The native Codex exporter protocol and the Python hook observer's OTLP HTTP/JSON export are separate paths. Configure and troubleshoot them independently.
+
 ## OTEL Collector
 
 - **Loki exporter** — use `otlphttp/loki` with endpoint `http://loki:3100/otlp`. The old `loki` exporter type is deprecated. The OTLP endpoint is what triggers structured metadata storage.
