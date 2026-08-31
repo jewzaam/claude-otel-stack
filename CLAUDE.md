@@ -1,6 +1,6 @@
 # Project: claude-otel-stack
 
-Local OTEL stack for monitoring Claude Code sessions. Five containers via `podman-compose`: OTEL Collector, Prometheus, Loki, Tempo, Grafana.
+Local OTEL stack for monitoring Claude Code and Codex sessions. Five containers via `podman-compose`: OTEL Collector, Prometheus, Loki, Tempo, Grafana.
 
 **Repo:** https://github.com/jewzaam/claude-otel-stack
 
@@ -9,10 +9,11 @@ Claude Code is unaffected if the stack is offline — the exporter is fire-and-f
 ## Architecture
 
 ```
-Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
-                                                → Loki (events/logs)
-                                                → Tempo (traces)
-                                                → Grafana (dashboards)
+Claude Code (wrapper) ─┐
+Codex (native OTEL) ───┴→ OTLP :4317/:4318 → OTEL Collector → Prometheus (metrics)
+                                                           → Loki (events/logs)
+                                                           → Tempo (traces)
+                                                           → Grafana (dashboards)
 ```
 
 ## Files
@@ -20,7 +21,7 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | Path | Purpose |
 |------|---------|
 | `docker-compose.yml` | All 5 services with `:z` SELinux bind mounts |
-| `bin/claude-wrapper.sh` | Wrapper script — sources claude.env, execs claude with passthrough args |
+| `bin/claude-wrapper.sh` | Claude wrapper — sources claude.env, execs claude with passthrough args |
 | `bin/claude.env` | OTEL env vars including dynamic `project=$(pwd)` (host sessions only) |
 | `bin/dashboard-sync.py` | Bidirectional sync between dashboard JSON files and Grafana API |
 | `systemd/claude-otel-stack.service` | systemd user unit for autostart |
@@ -33,6 +34,18 @@ Claude Code → OTLP gRPC :4317 → OTEL Collector → Prometheus (metrics)
 | `dashboards/*.json` | Grafana dashboard JSON for import |
 | `docs/tips.md` | Gotchas: SELinux, Loki structured metadata, LogQL patterns |
 | `docs/thoughts.md` | Design rationale, architecture options, signal inventory |
+
+Codex telemetry is configured outside the repository in `~/.codex/config.toml`:
+
+```toml
+[otel]
+environment = "dev"
+log_user_prompt = true
+exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
+metrics_exporter = { otlp-grpc = { endpoint = "http://localhost:4317" } }
+```
+
+Codex exports structured logs and metrics. Its trace exporter is not required for this stack. Keep telemetry routing in the user config; Codex ignores `otel` in project-local `.codex/config.toml`.
 
 ## Network
 
