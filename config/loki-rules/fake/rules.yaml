@@ -214,26 +214,45 @@ groups:
   - name: codex-session-state
     interval: 5s
     rules:
-      # Codex hooks are raw events. Derive state here, in the Loki ruler, and
-      # remote-write the result to Prometheus just like Claude. Comparing each
-      # event class with the latest event prevents an old READY or PERMISSION
-      # event from surviving a newer prompt/tool event.
+      # Codex hooks are raw events; state is derived here and remote-written to
+      # Prometheus like Claude's. Each rule asserts its own event class IS the
+      # latest event for the session, so an old READY or PERMISSION cannot
+      # survive a newer prompt or tool event.
+      #
+      # The label set matches the claude_session_* rules because
+      # claude-dashboard joins on it: `sandbox_openshell_name` and
+      # `sandbox_source` are what _match_sandbox() uses to put a session on a
+      # sandbox row, and `host_name` is what tells a remote session from a local
+      # one — without it _add_remote_session() drops the session entirely.
+      # See "The `by` clause is the public API" in CLAUDE.md. They arrive as
+      # resource attributes from codex/observe-hook.py.
+      #
+      # `headless` has no Codex equivalent yet: there is no wrapper marking
+      # `codex exec` runs the way claude-wrapper.sh marks `-p`. Absent label
+      # reads as interactive downstream, so such runs show as normal sessions.
+      #
+      # `cwd` and `model` are deliberately NOT grouped on, though the hook
+      # emits both. Neither is 1:1 with session_id — `/cd` moves one and
+      # `/model` the other — so grouping on them splits a live session into two
+      # label shapes mid-flight. The stale shape then holds a state no later
+      # event can supersede, because every later event carries the new shape,
+      # and claude-dashboard's _wins() arbitrates by identity richness and
+      # priority rather than recency. That is the failure described under
+      # "Compare on session_id, never on the full label set", reached from the
+      # other direction. `project` is the stable path label: pinned at launch
+      # from CODEX_PROJECT or, in a sandbox, from /sandbox/.env. A bare `codex`
+      # with no wrapper has neither, so its `project` follows `/cd` and splits
+      # the same way — launch through bin/codex-wrapper.sh.
+      # READY: SessionStart or Stop is the newest event.
       - record: codex_session_ready
         expr: |
-          max by (session_id, project, cwd, model) (
-            last_over_time(
-              {service_name="codex-hook-observer"}
-              | unwrap state [30m]
-            ) by (session_id, project, cwd, model)
-          ) == 1
-          or
-          (
-          max by (session_id, project, cwd, model) (
+          max by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name =~ "SessionStart|Stop"
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, project, cwd, model)
+            ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
           and on (session_id)
           (
@@ -252,24 +271,17 @@ groups:
               ) by (session_id)
             )
           )
-          )
 
+      # WORKING: a prompt/tool/compact event is the newest.
       - record: codex_session_working
         expr: |
-          max by (session_id, project, cwd, model) (
-            last_over_time(
-              {service_name="codex-hook-observer"}
-              | unwrap state [30m]
-            ) by (session_id, project, cwd, model)
-          ) == 2
-          or
-          (
-          max by (session_id, project, cwd, model) (
+          max by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name =~ "UserPromptSubmit|PreToolUse|PostToolUse|PreCompact|PostCompact|SubagentStart|SubagentStop"
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, project, cwd, model)
+            ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
           and on (session_id)
           (
@@ -288,24 +300,17 @@ groups:
               ) by (session_id)
             )
           )
-          )
 
+      # PERMISSION_REQUIRED: PermissionRequest is the newest event.
       - record: codex_session_permission
         expr: |
-          max by (session_id, project, cwd, model) (
-            last_over_time(
-              {service_name="codex-hook-observer"}
-              | unwrap state [30m]
-            ) by (session_id, project, cwd, model)
-          ) == 3
-          or
-          (
-          max by (session_id, project, cwd, model) (
+          max by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name = "PermissionRequest"
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, project, cwd, model)
+            ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
           and on (session_id)
           (
@@ -323,5 +328,4 @@ groups:
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
-          )
           )

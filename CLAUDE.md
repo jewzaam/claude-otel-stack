@@ -53,6 +53,18 @@ Codex exports structured logs and metrics. Its trace exporter is not required fo
 - `codex/hooks.json` and `codex/observe-hook.py` are source-controlled templates copied to `~/.codex/` by the user. The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
 - `bin/codex-wrapper.sh` pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`, and appends it to `OTEL_RESOURCE_ATTRIBUTES`.
 - Inherit the standard `OTEL_EXPORTER_OTLP_ENDPOINT` from the environment. Do not introduce a second endpoint variable for Codex.
+- **The observer passes `OTEL_RESOURCE_ATTRIBUTES` through verbatim** onto the
+  OTLP resource, then overlays `service.name`. That is how `host.name`,
+  `sandbox.source`, `sandbox.openshell_name` and `sandbox.profile` reach the
+  recording rules in an OpenShell sandbox, where they are host knowledge
+  written to `/sandbox/.env` and exported by the shell. Parse the variable;
+  do not maintain a list of `SANDBOX_*` names to read, and do not hand-build
+  the resource block again — without those attributes `claude-dashboard` cannot
+  join a Codex session to a sandbox row and the row sits at Unknown forever.
+- **The environment's `project` wins over the locally computed one.** In a
+  sandbox that is the host-side sandbox directory, matching what Claude
+  reports; the `CODEX_PROJECT`/payload-`cwd` fallback is for a bare `codex`
+  with no wrapper.
 
 ## Network
 
@@ -298,6 +310,23 @@ Dashboards should use `location` instead of `project` for display. `project` is 
 ### Recording rule gotchas
 
 - Codex session state is derived by Loki recording rules (`codex_session_ready`, `codex_session_working`, `codex_session_permission`) and remote-written to Prometheus. Session panels must query those Prometheus metrics; do not use direct Loki table queries for session state.
+- **The Codex rules group on the same labels as the Claude ones** —
+  `session_id, host_name, project, location, sandbox_source,
+  sandbox_openshell_name, sandbox_profile` — because `claude-dashboard` joins
+  on that set. `sandbox_openshell_name`/`sandbox_source` put a session on a
+  sandbox row; `host_name` is what separates a remote session from a local one,
+  and without it the dashboard drops the session entirely.
+- **`cwd` and `model` are deliberately not grouped on**, though the hook emits
+  both. Neither is 1:1 with `session_id` (`/cd`, `/model`), so grouping on them
+  splits a live session into two label shapes mid-flight and the stale one
+  holds a state nothing can supersede — the same failure as "Compare on
+  `session_id`", reached from the other direction. This is the exception to
+  "include by default": that rule is for labels that add zero series.
+- **The rules used to open with `last_over_time(... | unwrap state) == 1|2|3`.**
+  `observe-hook.py` has never emitted a `state` attribute, so that branch
+  matched nothing and every rule ran entirely on its `or (...)` timestamp
+  branch. Removed. Do not reintroduce a numeric state field in the hook — the
+  ordering comparison is the derivation.
 - Validate dashboard and recording-rule queries against the live Prometheus/Loki endpoints rather than guessing metric names or field shapes. Dashboard-sync pickup and Loki ruler reload are separate operations: an existing dashboard does not require a dashboard-sync restart, while changed recording rules do require the ruler to reload.
 - Codex token usage is `codex_turn_token_usage_sum{token_type="total"}`. Do not substitute guessed counter names such as `codex_turn_token_usage_input_tokens_total`.
 - **Use `observed_timestamp` not `event_sequence`** for time comparisons — `event_sequence` resets across session resumes (sandbox reconnects, `/resume`).

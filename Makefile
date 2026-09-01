@@ -28,13 +28,13 @@ test-lint-json:  ## Validate dashboard JSON syntax and required fields
 
 test-lint-python:  ## Compile-check Python scripts
 	@echo "==> Compiling Python"
-	python3 -m py_compile bin/dashboard-sync.py
+	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py
 	@echo "OK"
 
 test-lint-shell:  ## Lint shell scripts with shellcheck
 	@echo "==> Checking shell scripts"
 	@if command -v shellcheck > /dev/null 2>&1; then \
-		shellcheck bin/claude-wrapper.sh && echo "OK"; \
+		shellcheck bin/claude-wrapper.sh bin/codex-wrapper.sh && echo "OK"; \
 	else \
 		echo "SKIP: shellcheck not installed"; \
 	fi
