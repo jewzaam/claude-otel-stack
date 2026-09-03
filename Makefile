@@ -28,7 +28,7 @@ test-lint-json:  ## Validate dashboard JSON syntax and required fields
 
 test-lint-python:  ## Compile-check Python scripts
 	@echo "==> Compiling Python"
-	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py
+	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py scripts/reverse-engineer-codex-pricing.py
 	@echo "OK"
 
 test-lint-shell:  ## Lint shell scripts with shellcheck
