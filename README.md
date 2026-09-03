@@ -93,7 +93,7 @@ metrics_exporter = { otlp-grpc = {
 
 The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex token totals are available as `codex_turn_token_usage_sum{token_type="total"}`.
 
-The repository also contains source-controlled hook templates. Copy `codex/hooks.json` and `codex/observe-hook.py` to `~/.codex/` when enabling hook-based lifecycle telemetry. The hooks export raw lifecycle logs; session state is derived by Loki recording rules and written to Prometheus for Grafana dashboards. This keeps the exporter simple while allowing the state model to evolve independently.
+This repository keeps the stack-specific hook templates in `codex/`: copy `codex/hooks.json` and `codex/observe-hook.py` to `~/.codex/` when enabling hook-based lifecycle telemetry. Reusable Codex configuration, hooks, and tooling are being collected in the public [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff) project. The hooks export raw lifecycle logs; session state is derived by Loki recording rules and written to Prometheus for Grafana dashboards.
 
 For endpoint routing, use the standard `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable when the endpoint is supplied by the environment, for example `http://localhost:4318`. Use OTLP gRPC on port `4317` when configuring `otlp-grpc`, or OTLP HTTP/protobuf on port `4318` when using HTTP exporters. Port `8889` is the collector's Prometheus scrape endpoint, not an OTLP ingest endpoint. A remote stack can use the same setting with its reachable collector URL.
 
