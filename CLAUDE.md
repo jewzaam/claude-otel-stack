@@ -50,7 +50,7 @@ Codex exports structured logs and metrics. Its trace exporter is not required fo
 ### Codex integration
 
 - Codex native OTEL is user-level configuration in `~/.codex/config.toml`. Do not edit `~/.codex/` from this repo.
-- `codex/hooks.json` and `codex/observe-hook.py` are source-controlled templates copied to `~/.codex/` by the user. The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
+- `codex/hooks.json` and `codex/observe-hook.py` are stack-specific source-controlled templates. Sandboxes consume them from this checkout; host users may copy them to `~/.codex/`. Reusable Codex configuration and tooling belongs in [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff). The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
 - `bin/codex-wrapper.sh` pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`, and appends it to `OTEL_RESOURCE_ATTRIBUTES`.
 - Inherit the standard `OTEL_EXPORTER_OTLP_ENDPOINT` from the environment. Do not introduce a second endpoint variable for Codex.
 - **The observer passes `OTEL_RESOURCE_ATTRIBUTES` through verbatim** onto the
