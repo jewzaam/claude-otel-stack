@@ -211,6 +211,24 @@ groups:
             )
           )
 
+  # Native Codex telemetry puts the durable conversation id on log records,
+  # but omits it from Prometheus metrics.  Keep a bounded index in Prometheus
+  # solely so Grafana can populate its conversation selector; token/accounting
+  # panels query the event records themselves for exact per-conversation data.
+  - name: codex-conversation-index
+    interval: 5m
+    rules:
+      - record: codex_conversation_event_count
+        expr: |
+          sum by (conversation_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
+            count_over_time(
+              {service_name="codex_cli_rs"}
+              | conversation_id != ""
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              [30d]
+            )
+          )
+
   - name: codex-session-state
     interval: 5s
     rules:
