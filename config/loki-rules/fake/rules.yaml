@@ -243,7 +243,7 @@ groups:
       # sandbox row, and `host_name` is what tells a remote session from a local
       # one — without it _add_remote_session() drops the session entirely.
       # See "The `by` clause is the public API" in CLAUDE.md. They arrive as
-      # resource attributes from codex/observe-hook.py.
+      # resource attributes from the deployed my-codex-stuff Codex hook.
       #
       # `headless` has no Codex equivalent yet: there is no wrapper marking
       # `codex exec` runs the way claude-wrapper.sh marks `-p`. Absent label

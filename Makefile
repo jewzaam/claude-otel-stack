@@ -28,7 +28,7 @@ test-lint-json:  ## Validate dashboard JSON syntax and required fields
 
 test-lint-python:  ## Compile-check Python scripts
 	@echo "==> Compiling Python"
-	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py scripts/reverse-engineer-codex-pricing.py scripts/export-codex-otel-audit.py scripts/export-claude-otel-audit.py
+	python3 -m py_compile bin/dashboard-sync.py scripts/reverse-engineer-codex-pricing.py scripts/export-codex-otel-audit.py scripts/export-claude-otel-audit.py
 	@echo "OK"
 
 export-codex-otel-audit:  ## Export retained Codex OTEL sessions (DAYS=30 OUTPUT=codex-otel.json)
