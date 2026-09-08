@@ -79,7 +79,7 @@
               "uid": "PBFA97CFB590B2093"
             },
           "expr": "count(codex_session_ready{project=~\"$project\"} > 0 unless codex_session_working{project=~\"$project\"} > 0 unless codex_session_permission{project=~\"$project\"} > 0) or vector(0)",
-          "instant": true,
+          "expr": "(((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate)) / 1000000 or on(env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" [$__range])) * 0)) + (((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate)) / 1000000 or on(env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" [$__range])) * 0))",
           "refId": "A"
         }
       ],
@@ -298,8 +298,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -359,17 +359,30 @@
           "expr": "((sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"input\"}[$__range])) * $codex_sol_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"cached_input\"}[$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"cache_write_input\"}[$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"output\"}[$__range])) * $codex_sol_output_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"input\"}[$__range])) * $codex_terra_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"cached_input\"}[$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"cache_write_input\"}[$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"output\"}[$__range])) * $codex_terra_output_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"input\"}[$__range])) * $codex_luna_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"cached_input\"}[$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"cache_write_input\"}[$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"output\"}[$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
           "format": "time_series",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "B"
         }
       ],
       "title": "Total Cost",
       "type": "stat",
-      "description": "Estimated Codex API cost using editable hidden pricing variables. Rates are USD per million tokens and apply retroactively to the selected time range."
+      "description": "Estimated Codex API cost from native response-completion events. Rates are USD per million tokens and apply retroactively to the selected time range."
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -427,15 +440,15 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(increase(codex_turn_token_usage_sum{project=~\"$project\", token_type=\"total\"}[$__range]))",
+          "expr": "sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap tool_token_count [$__range])) or vector(0)",
           "queryType": "range",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Total Tokens (Normalized)",
+      "title": "Total Tokens",
       "type": "stat",
-      "description": "Codex input plus output token counters from native OTEL metrics."
+      "description": "Exact total tokens from native Codex response-completion events."
     },
     {
       "datasource": {
@@ -556,7 +569,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) or vector(0)",
+          "expr": "sum(count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) or vector(0)",
           "queryType": "range",
           "range": true,
           "refId": "A",
@@ -733,8 +746,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -857,7 +870,8 @@
           "format": "time_series",
           "legendFormat": "{{env}}",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "hide": true
         },
         {
           "datasource": {
@@ -869,7 +883,83 @@
           "format": "time_series",
           "legendFormat": "{{env}}",
           "range": true,
-          "refId": "B"
+          "refId": "B",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap input_token_count [$__range])) * $codex_sol_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap output_token_count [$__range])) * $codex_sol_output_rate or vector(0))) / 1000000 + ((sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0))) / 1000000 + ((sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum by (env)(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "C",
+          "legendFormat": "{{env}}",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_sol_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_sol_cached_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_sol_cache_write_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_sol_output_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_terra_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_terra_cached_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_terra_cache_write_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_terra_output_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_luna_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_luna_cached_input_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_luna_cache_write_rate) + ((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) or 0 * sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap tool_token_count [$__range]))) * $codex_luna_output_rate) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "D",
+          "legendFormat": "{{env}}",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "(((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate)) / 1000000 or on(env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" [$__range])) * 0)) + (((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate)) / 1000000 or on(env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" [$__range])) * 0))",
+          "queryType": "range",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "E",
+          "legendFormat": "{{env}}"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "F",
+          "legendFormat": "{{env}}",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | env!=\"\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "format": "table",
+          "instant": true,
+          "range": false,
+          "refId": "G",
+          "legendFormat": "{{env}}",
+          "hide": true
         }
       ],
       "title": "Cost by Environment",
@@ -878,8 +968,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -935,21 +1025,63 @@
           "expr": "((sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"input\"}[$__range])) * $codex_sol_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"cached_input\"}[$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"cache_write_input\"}[$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-sol\", token_type=\"output\"}[$__range])) * $codex_sol_output_rate or vector(0))) / 1000000",
           "legendFormat": "Sol",
           "range": true,
-          "refId": "A"
+          "refId": "A",
+          "hide": true
         },
         {
           "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
           "expr": "((sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"input\"}[$__range])) * $codex_terra_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"cached_input\"}[$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"cache_write_input\"}[$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-terra\", token_type=\"output\"}[$__range])) * $codex_terra_output_rate or vector(0))) / 1000000",
           "legendFormat": "Terra",
           "range": true,
-          "refId": "B"
+          "refId": "B",
+          "hide": true
         },
         {
           "datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"},
           "expr": "((sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"input\"}[$__range])) * $codex_luna_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"cached_input\"}[$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"cache_write_input\"}[$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(increase(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", model=\"gpt-5.6-luna\", token_type=\"output\"}[$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
           "legendFormat": "Luna",
           "range": true,
-          "refId": "C"
+          "refId": "C",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "D",
+          "legendFormat": "Sol"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "E",
+          "legendFormat": "Terra"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "F",
+          "legendFormat": "Luna"
         }
       ],
       "title": "Cost by Model",
@@ -1072,7 +1204,7 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum by (decision) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | event_name=\"codex.tool_decision\" | decision!=\"\" [$__range]))",
+          "expr": "sum by (decision) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.tool_decision\" | decision!=\"\" [$__range]))",
           "queryType": "range",
           "range": true,
           "refId": "A",
@@ -1084,8 +1216,8 @@
     },
     {
       "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
       },
       "fieldConfig": {
         "defaults": {
@@ -1146,6 +1278,20 @@
           "format": "time_series",
           "range": true,
           "refId": "A",
+          "legendFormat": "{{project}}",
+          "hide": true
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "(((sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or on(project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | project=~\"$project\" | conversation_id=~\"$session_id\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" [$__range])) * 0)))) / 1000000",
+          "queryType": "range",
+          "range": true,
+          "refId": "B",
           "legendFormat": "{{project}}"
         }
       ],
@@ -1602,11 +1748,11 @@
         },
         "hide": 0,
         "includeAll": true,
-        "label": "Session ID",
+        "label": "Conversation ID",
         "multi": true,
         "name": "session_id",
         "options": [],
-        "query": "label_values(codex_turn_token_usage_sum{project=~\"$project\", host_name=~\"$host_name\", token_type=\"total\"}, session_id)",
+        "query": "label_values(codex_conversation_event_count{project=~\"$project\"}, conversation_id)",
         "refresh": 2,
         "regex": "",
         "regexApplyTo": "value",
