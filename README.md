@@ -128,6 +128,31 @@ Available dashboards in `dashboards/`:
 
 The all-in-one layout is shared across harnesses where the underlying signals are compatible. Codex skill panels are intentionally placeholders; Codex does not yet provide the same skill telemetry as Claude Code. Traces are optional and are not required for the Codex dashboards.
 
+## Export sandbox Codex sessions
+
+Export retained telemetry as portable session JSON, ready to upload:
+
+```bash
+make export-codex-otel-audit DAYS=30 OUTPUT=codex-otel.json
+make export-claude-otel-audit DAYS=30 OUTPUT=claude-otel.json
+```
+
+The export is pull-based, so sessions that never emitted `SessionEnd` or
+`Stop` are included. It uses the host's Loki endpoint by default; specify a
+remote endpoint with `LOKI_URL=...` and limit results with `PROJECT=...`.
+
+The Claude export recovers exact per-request token totals (including cache
+tokens), request durations, models/effort, prompts, tools, skills, and
+subagent completion events. The Codex export recovers session identity,
+timestamps, prompts, tool/command activity, compactions, subagent starts,
+models, and hook errors. Current native Codex token metrics lack `session_id`,
+so its exporter intentionally leaves per-session token and
+assistant/reasoning-turn fields unavailable rather than misattributing shared
+project/model metric series.
+
+The profile is preserved in the existing `title` field as
+`(profile=work)`, `(profile=personal)`, or `(profile=local)`.
+
 ## Local Grafana (dashboard iteration against remote backends)
 
 For fast dashboard iteration without redeploying the full stack — useful when Prom/Loki/Tempo run elsewhere (k3s, tailnet, cloud) and only Grafana needs to run locally.

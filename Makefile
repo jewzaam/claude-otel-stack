@@ -6,7 +6,7 @@ MAKEFLAGS += --no-print-directory
 # Compose tool autodetect — prefer docker compose (universal in CI), fall back to podman-compose, then docker-compose
 COMPOSE := $(shell command -v docker > /dev/null 2>&1 && docker compose version > /dev/null 2>&1 && echo "docker compose" || command -v podman-compose 2>/dev/null || command -v docker-compose 2>/dev/null)
 
-.PHONY: all check test-lint-json test-lint-python test-lint-shell test-lint-compose local-up local-down local-restart local-logs help
+.PHONY: all check test-lint-json test-lint-python test-lint-shell test-lint-compose export-claude-otel-audit export-codex-otel-audit local-up local-down local-restart local-logs help
 
 all: check
 
@@ -28,8 +28,14 @@ test-lint-json:  ## Validate dashboard JSON syntax and required fields
 
 test-lint-python:  ## Compile-check Python scripts
 	@echo "==> Compiling Python"
-	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py scripts/reverse-engineer-codex-pricing.py
+	python3 -m py_compile bin/dashboard-sync.py codex/observe-hook.py scripts/reverse-engineer-codex-pricing.py scripts/export-codex-otel-audit.py scripts/export-claude-otel-audit.py
 	@echo "OK"
+
+export-codex-otel-audit:  ## Export retained Codex OTEL sessions (DAYS=30 OUTPUT=codex-otel.json)
+	@python3 scripts/export-codex-otel-audit.py --days "$(or $(DAYS),30)" --output "$(or $(OUTPUT),codex-otel.json)" $(if $(LOKI_URL),--loki-url "$(LOKI_URL)") $(if $(PROJECT),--project "$(PROJECT)")
+
+export-claude-otel-audit:  ## Export retained Claude OTEL sessions (DAYS=30 OUTPUT=claude-otel.json)
+	@python3 scripts/export-claude-otel-audit.py --days "$(or $(DAYS),30)" --output "$(or $(OUTPUT),claude-otel.json)" $(if $(LOKI_URL),--loki-url "$(LOKI_URL)") $(if $(PROJECT),--project "$(PROJECT)")
 
 test-lint-shell:  ## Lint shell scripts with shellcheck
 	@echo "==> Checking shell scripts"
