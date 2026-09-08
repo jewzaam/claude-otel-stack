@@ -120,6 +120,7 @@ sum by (prompt_id, name, source) (
 - **Use explicit datasource UIDs** — `"datasource": "Prometheus"` (string) doesn't reliably resolve. Use `"datasource": {"type": "prometheus", "uid": "PBFA97CFB590B2093"}`. Get UIDs from `curl -s http://localhost:3000/api/datasources`.
 - **Every panel needs an `id` field** — Grafana silently fails import without them.
 - **Include `schemaVersion`** — add `"schemaVersion": 39` at the top level.
+- **Long Loki queries can hit the gateway's GET header limit** — multi-model cost expressions returned HTTP 431 even though shorter expressions parsed and returned data. Split the query into smaller targets, or use a permitted POST route, before adding Grafana-side joins.
 
 ## Claude Code OTEL Signals
 
