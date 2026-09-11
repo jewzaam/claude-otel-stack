@@ -384,7 +384,7 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Normalized total tokens expressed as Sol-input-equivalent tokens using the Codex pricing variables.",
+      "description": "Total tokens from the native Codex counter.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -441,14 +441,14 @@
           },
           "direction": "backward",
           "editorMode": "code",
-          "expr": "sum(sum_over_time(codex_normalized_tokens_by_project_v2{conversation_id=~\"$session_id\"}[$__range])) or vector(0)",
+          "expr": "sum(increase(codex_turn_token_usage_sum{project=~\"$project\", token_type=\"total\"}[$__range])) or vector(0)",
           "instant": true,
           "queryType": "instant",
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Total Tokens (Normalized)",
+      "title": "Total Tokens",
       "type": "stat"
     },
     {
@@ -1229,7 +1229,7 @@
         "type": "prometheus",
         "uid": "PBFA97CFB590B2093"
       },
-      "description": "Exact Codex USD by normalized project: normalized Sol-input-equivalent tokens multiplied by the Sol input rate.",
+      "description": "Raw native Codex Luna cost by project. The rule-backed comparison is retained separately.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1252,7 +1252,7 @@
         "x": 12,
         "y": 12
       },
-      "id": 422,
+      "id": 424,
       "options": {
         "legend": {
           "displayMode": "table",
@@ -1284,9 +1284,10 @@
             "type": "prometheus",
             "uid": "PBFA97CFB590B2093"
           },
-          "expr": "(sum by (project_clean) (sum_over_time(codex_normalized_tokens_by_project_v2{conversation_id=~\"$session_id\"}[$__range])) * $codex_sol_input_rate) / 1000000",
-          "legendFormat": "{{project_clean}}",
-          "queryType": "range",
+          "expr": "(sum by (project) (increase(codex_turn_token_usage_sum{project=~\"$project\", model=\"gpt-5.6-luna\", token_type=\"input\"}[$__range])) * $codex_luna_input_rate + sum by (project) (increase(codex_turn_token_usage_sum{project=~\"$project\", model=\"gpt-5.6-luna\", token_type=\"cached_input\"}[$__range])) * $codex_luna_cached_input_rate + sum by (project) (increase(codex_turn_token_usage_sum{project=~\"$project\", model=\"gpt-5.6-luna\", token_type=\"cache_write_input\"}[$__range])) * $codex_luna_cache_write_rate + sum by (project) (increase(codex_turn_token_usage_sum{project=~\"$project\", model=\"gpt-5.6-luna\", token_type=\"output\"}[$__range])) * $codex_luna_output_rate) / 1000000",
+          "instant": true,
+          "legendFormat": "{{project}}",
+          "queryType": "instant",
           "refId": "A"
         }
       ],
@@ -1438,6 +1439,75 @@
       "type": "table"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Native Codex token usage by project.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 1,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 423,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum by (project) (increase(codex_turn_token_usage_sum{project=~\"$project\", token_type=\"total\"}[$__range]))",
+          "legendFormat": "{{project}}",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by Project",
+      "type": "piechart"
+    },
+    {
       "description": "Codex code-review run attribution is not currently mapped.",
       "fieldConfig": {
         "defaults": {
@@ -1524,7 +1594,7 @@
         "h": 9,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 28
       },
       "id": 420,
       "options": {
@@ -1640,75 +1710,6 @@
         }
       ],
       "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "PBFA97CFB590B2093"
-      },
-      "description": "Normalized Codex token usage by project, expressed as Sol-input-equivalent tokens using the Codex pricing variables. Native project labels are preserved and missing ones use hook attribution.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "decimals": 1,
-          "unit": "short"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 29
-      },
-      "id": 423,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "PBFA97CFB590B2093"
-          },
-          "expr": "sum by (project_clean) (sum_over_time(codex_normalized_tokens_by_project_v2{conversation_id=~\"$session_id\"}[$__range]))",
-          "legendFormat": "{{project_clean}}",
-          "queryType": "range",
-          "refId": "A"
-        }
-      ],
-      "title": "Tokens by Project",
-      "type": "piechart"
     }
   ],
   "preload": false,
