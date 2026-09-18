@@ -1,0 +1,219 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Codex cost by day using the same model pricing and token normalization as the Codex All-in-One dashboard.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "gradientMode": "hue",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "interval": "1d",
+      "options": {
+        "annotations": {
+          "clustering": -1,
+          "multiLane": false
+        },
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "direction": "backward",
+          "editorMode": "code",
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [1d])) * ($codex_luna_input_rate * 20) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [1d])) * ($codex_luna_input_rate * 2) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [1d])) * ($codex_luna_input_rate * 25) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [1d])) * ($codex_luna_input_rate * 100) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [1d])) * ($codex_luna_input_rate * 10) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [1d])) * ($codex_luna_input_rate * 1) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [1d])) * ($codex_luna_input_rate * 12.5) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [1d])) * ($codex_luna_input_rate * 60) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [1d])) * $codex_luna_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [1d])) * ($codex_luna_input_rate * 0.1) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [1d])) * ($codex_luna_input_rate * 1.25) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | label_format env_on=`{{ if eq .sandbox_profile \"work\" }}$env_sb_work{{ else if .sandbox_profile }}0{{ else }}$env_local{{ end }}` | env_on=\"1\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [1d])) * ($codex_luna_input_rate * 6) or vector(0))) / 1000000",
+          "legendFormat": "Codex cost",
+          "queryType": "range",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Codex Cost by Day",
+      "type": "barchart"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 42,
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "Local",
+        "name": "env_local",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "SB-work",
+        "name": "env_sb_work",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "text": "0.2",
+          "value": "0.2"
+        },
+        "hide": 0,
+        "label": "Luna input $/MTok",
+        "name": "codex_luna_input_rate",
+        "query": "0.2",
+        "skipUrlSync": true,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Codex \u2014 Cost by Day",
+  "uid": "codex-cost-by-day"
+}
