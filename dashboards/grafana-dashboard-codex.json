@@ -1920,12 +1920,12 @@
       },
       {
         "current": {
-          "text": "10",
-          "value": "10"
+          "text": "12",
+          "value": "12"
         },
         "hide": 2,
         "name": "codex_terra_output_rate",
-        "query": "10",
+        "query": "12",
         "skipUrlSync": true,
         "type": "textbox"
       },
@@ -1934,7 +1934,8 @@
           "text": "0.2",
           "value": "0.2"
         },
-        "hide": 2,
+        "hide": 0,
+        "label": "Luna input $/MTok",
         "name": "codex_luna_input_rate",
         "query": "0.2",
         "skipUrlSync": true,
@@ -1964,12 +1965,12 @@
       },
       {
         "current": {
-          "text": "1",
-          "value": "1"
+          "text": "1.2",
+          "value": "1.2"
         },
         "hide": 2,
         "name": "codex_luna_output_rate",
-        "query": "1",
+        "query": "1.2",
         "skipUrlSync": true,
         "type": "textbox"
       }

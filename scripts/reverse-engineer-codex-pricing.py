@@ -36,8 +36,20 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 TOKEN_TYPES = ("input", "cached_input", "cache_write_input", "output")
-UPSTREAM_MULTIPLIERS = (1.0, 0.1, 1.25, 5.0)
+RAW_TOKEN_TYPES = TOKEN_TYPES + ("reasoning_output",)
+UPSTREAM_INPUT_MULTIPLIERS = (1.0, 0.1, 1.25)
 METRIC = "codex_turn_token_usage_sum"
+
+
+def default_prometheus_url() -> str:
+    """Use the sandbox read endpoint when running inside an OpenShell sandbox."""
+    url = os.environ.get("PROMETHEUS_URL") or os.environ.get(
+        "SANDBOX_PROMETHEUS_URL", "http://localhost:9090"
+    )
+    for suffix in ("/-/healthy", "/ready"):
+        if url.endswith(suffix):
+            url = url[: -len(suffix)]
+    return url.rstrip("/")
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,8 +57,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("csv", type=Path, help="CSV file containing date,usd columns")
     parser.add_argument(
         "--prometheus-url",
-        default=os.environ.get("PROMETHEUS_URL", "http://localhost:9090"),
-        help="Prometheus base URL (default: PROMETHEUS_URL or http://localhost:9090)",
+        default=default_prometheus_url(),
+        help="Prometheus base URL (default: PROMETHEUS_URL, SANDBOX_PROMETHEUS_URL, or localhost)",
     )
     parser.add_argument(
         "--model",
@@ -99,7 +111,7 @@ def query_daily_tokens(
 ) -> dict[str, float]:
     selector = (
         f'{METRIC}{{model="{model}",token_type=~"'
-        + "|".join(TOKEN_TYPES)
+        + "|".join(RAW_TOKEN_TYPES)
         + '"}'
     )
     duration_seconds = int(end.timestamp() - start.timestamp())
@@ -116,7 +128,7 @@ def query_daily_tokens(
     if payload.get("status") != "success":
         raise RuntimeError(f"Prometheus query failed: {payload}")
 
-    values = {token_type: 0.0 for token_type in TOKEN_TYPES}
+    values = {token_type: 0.0 for token_type in RAW_TOKEN_TYPES}
     for result in payload.get("data", {}).get("result", []):
         token_type = result.get("metric", {}).get("token_type")
         if token_type in values:
@@ -152,13 +164,25 @@ def fit_independent_rates(samples: list[tuple[list[float], float]]) -> list[floa
     return solve_linear_system(matrix, vector)
 
 
-def fit_upstream_rate(samples: list[tuple[list[float], float]]) -> float:
-    weighted = [sum(token * multiplier for token, multiplier in zip(row, UPSTREAM_MULTIPLIERS)) for row, _ in samples]
+def fit_upstream_rate(
+    samples: list[tuple[list[float], float]], multipliers: tuple[float, float, float, float]
+) -> float:
+    weighted = [sum(token * multiplier for token, multiplier in zip(row, multipliers)) for row, _ in samples]
     return sum(total * usd for total, (_, usd) in zip(weighted, samples)) / sum(total * total for total in weighted)
 
 
 def format_rates(rates: Iterable[float]) -> str:
     return ", ".join(f"{token_type}=${rate:.6g}/MTok" for token_type, rate in zip(TOKEN_TYPES, rates))
+
+
+def upstream_multipliers(model: str) -> tuple[float, float, float, float]:
+    if model.endswith("-sol"):
+        output_multiplier = 5.0
+    elif model.endswith(("-terra", "-luna")):
+        output_multiplier = 6.0
+    else:
+        raise ValueError("upstream multipliers are defined only for Sol, Terra, and Luna")
+    return UPSTREAM_INPUT_MULTIPLIERS + (output_multiplier,)
 
 
 def main() -> int:
@@ -171,32 +195,50 @@ def main() -> int:
         raise ValueError(f"unknown timezone: {args.timezone}") from exc
 
     costs = read_costs(args.csv)
+    multipliers = upstream_multipliers(args.model)
     samples = []
     print(f"Model: {args.model}")
     print(f"Day boundary: {args.timezone} at {args.day_start_hour:02d}:00")
     print()
-    print("date         reported_usd  input       cached_input  cache_write  output")
+    print("date         reported_usd  input       cached_input  cache_write  output       reasoning")
 
     for day, usd in costs:
         start = datetime.combine(day, time(args.day_start_hour), timezone)
         end = start + timedelta(days=1)
         tokens = query_daily_tokens(args.prometheus_url, args.model, start, end)
         row = [tokens[token_type] / 1_000_000 for token_type in TOKEN_TYPES]
+        row[-1] += tokens["reasoning_output"] / 1_000_000
         samples.append((row, usd))
         print(
             f"{day.isoformat()}  {usd:12.6f}  "
-            + "  ".join(f"{tokens[token_type]:10.0f}" for token_type in TOKEN_TYPES)
+            + "  ".join(
+                [f"{tokens[token_type]:10.0f}" for token_type in TOKEN_TYPES]
+                + [f"{tokens['reasoning_output']:10.0f}"]
+            )
         )
 
-    weighted_totals = [sum(row[i] * UPSTREAM_MULTIPLIERS[i] for i in range(4)) for row, _ in samples]
+    weighted_totals = [sum(row[i] * multipliers[i] for i in range(4)) for row, _ in samples]
     if not any(weighted_totals):
         raise RuntimeError("no matching Codex token telemetry found for the supplied dates")
 
-    base_rate = fit_upstream_rate(samples)
+    base_rate = fit_upstream_rate(samples, multipliers)
+    daily_rates = [usd / total for total, (_, usd) in zip(weighted_totals, samples) if total > 0]
     print()
-    print("Upstream-ratio estimate (cached input=.1x, cache write=1.25x, output=5x):")
-    print(f"  base input rate: ${base_rate:.6g}/MTok")
-    print(f"  implied rates:   {format_rates([base_rate * multiplier for multiplier in UPSTREAM_MULTIPLIERS])}")
+    print(
+        "Upstream-ratio estimate "
+        f"(cached input=.1x, cache write=1.25x, output={multipliers[-1]:g}x):"
+    )
+    print(f"  least-squares base input rate: ${base_rate:.6g}/MTok")
+    print(f"  implied rates:   {format_rates([base_rate * multiplier for multiplier in multipliers])}")
+    print(f"  daily base-rate range: ${min(daily_rates):.6g}–${max(daily_rates):.6g}/MTok")
+    print(f"  daily base-rate median: ${statistics.median(daily_rates):.6g}/MTok")
+
+    print("\nDaily fit diagnostics:")
+    print("date         implied_base  predicted_usd  residual_usd")
+    for (day, usd), weighted in zip(costs, weighted_totals):
+        implied = usd / weighted if weighted else float("nan")
+        predicted = weighted * base_rate
+        print(f"{day.isoformat()}  ${implied:11.6g}  {predicted:13.6f}  {usd - predicted:+.6f}")
 
     if len(samples) < 4:
         print("\nIndependent four-rate estimate: unavailable; need at least four days.")
@@ -206,12 +248,14 @@ def main() -> int:
         except ValueError as exc:
             print(f"\nIndependent four-rate estimate: unavailable; {exc}.")
         else:
-            print("\nIndependent four-rate estimate:")
-            print(f"  {format_rates(rates)}")
-            print("  Treat this as unstable unless the daily token mixes differ substantially.")
-
-    observed_scales = [usd / total for total, (_, usd) in zip(weighted_totals, samples) if total > 0]
-    print(f"\nUpstream-ratio daily base-rate median: ${statistics.median(observed_scales):.6g}/MTok")
+            if any(rate < 0 for rate in rates):
+                print("\nIndependent four-rate estimate: unusable; it requires negative prices.")
+                print(f"  raw fit: {format_rates(rates)}")
+                print("  The spend data is not explained by a fixed per-token price model.")
+            else:
+                print("\nIndependent four-rate estimate:")
+                print(f"  {format_rates(rates)}")
+                print("  Treat this as unstable unless the daily token mixes differ substantially.")
     return 0
 
 
