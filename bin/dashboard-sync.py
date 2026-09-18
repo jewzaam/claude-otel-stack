@@ -29,6 +29,7 @@ DASHBOARDS = {
     "claude-prompts": "grafana-dashboard-prompts.json",
     "claude-all-in-one": "grafana-dashboard-all-in-one.json",
     "codex": "grafana-dashboard-codex.json",
+    "codex-cost-by-day": "grafana-dashboard-codex-cost-by-day.json",
 }
 
 
