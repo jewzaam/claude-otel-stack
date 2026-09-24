@@ -20,9 +20,10 @@ from pathlib import Path
 DEFAULT_LOKI_URL = "http://127.0.0.1:3100"
 PAGE_SIZE = 1000
 DAY_NS = 86_400_000_000_000
+DEFAULT_QUERY = '{service_name="claude-code"} | event_name =~ "api_request|user_prompt|tool_result|skill_activated|subagent_completed"'
 
 
-def fetch_events(loki_url, start, end):
+def fetch_events(loki_url, start, end, query=DEFAULT_QUERY):
     endpoint = loki_url.rstrip("/") + "/loki/api/v1/query_range"
     window_start, finish = int(start.timestamp() * 1e9), int(end.timestamp() * 1e9)
     records = []
@@ -35,7 +36,7 @@ def fetch_events(loki_url, start, end):
         cursor = window_start
         window_records = 0
         while cursor <= window_end:
-            params = urllib.parse.urlencode({"query": '{service_name="claude-code"} | event_name =~ "api_request|user_prompt|tool_result|skill_activated|subagent_completed"', "start": cursor, "end": window_end, "limit": PAGE_SIZE, "direction": "forward"})
+            params = urllib.parse.urlencode({"query": query, "start": cursor, "end": window_end, "limit": PAGE_SIZE, "direction": "forward"})
             try:
                 with urllib.request.urlopen(f"{endpoint}?{params}", timeout=30) as response:
                     data = json.load(response)
