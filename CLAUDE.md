@@ -218,14 +218,13 @@ Loki recording rules in `config/loki-rules/fake/rules.yaml` derive session state
 | `claude_session_permission` | PermissionRequest timestamp > last tool_result/user_prompt timestamp | `hook_execution_complete` with `hook_event=PermissionRequest` timestamp > activity timestamp |
 | `claude_skill_cost_usd` | Cost attributed to skill (1m window) | `api_request` with `skill_name!=""`, unwrap `cost_usd` |
 
-Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`, `sandbox_source`, `sandbox_openshell_name`.
+Labels on state metrics: `session_id`, `host_name`, `project`, `location`, `headless`, `sandbox_source`, `sandbox_openshell_name`, `sandbox_profile`.
 Labels on skill cost: the same, plus `skill_name`.
 
-`sandbox_profile` is deliberately absent. The four session-state panels in
-`grafana-dashboard-all-in-one.json` therefore show every profile regardless of
-the dashboard's `Sandbox Profile` selector. Adding it to the `by` clauses would
-cost no extra series (it is 1:1 with `session_id`) — it was left out to avoid a
-ruler redeploy, not because it is wrong.
+`sandbox_profile` is carried by every Claude session-state recording rule so
+the Unified - All-in-One dashboard can filter session rows by environment. It
+is 1:1 with `session_id` and adds no series; reload the Loki ruler after changing
+these rules.
 
 ### The `by` clause is the public API
 
