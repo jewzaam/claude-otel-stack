@@ -1,0 +1,1238 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Codex telemetry using the Claude Code all-in-one dashboard layout. Panels without equivalent Codex telemetry are intentionally left as placeholders.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Derived from the latest Codex hook state: SessionStart or Stop.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "id": 407,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "noValue": "0",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "((count(claude_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0)) + (count(codex_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0))) or vector(0)",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
+        }
+      ],
+      "title": "Ready",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Derived from the latest Codex hook state: prompt/tool activity.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "id": 406,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "noValue": "0",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "((count(claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0)) + (count(codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0 unless codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0))) or vector(0)",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
+        }
+      ],
+      "title": "Working",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Derived from the latest Codex hook state: PermissionRequest.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "id": 405,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "noValue": "0",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "((count(claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0)) + (count(codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) or vector(0))) or vector(0)",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
+        }
+      ],
+      "title": "Permission Required",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Estimated Codex API cost from native response-completion events. Rates are USD per million tokens and apply retroactively to the selected time range.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "id": 400,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "(sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range])) or vector(0)) + (((sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000 or vector(0))",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Cost",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Total tokens from the native Codex counter.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "green",
+            "mode": "fixed"
+          },
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "id": 401,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap input_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap output_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_creation_tokens [$__range]))) or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap tool_token_count [$__range])) or vector(0))",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Tokens",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "description": "Latest inferred state per Codex session, keyed by session_id and launch-time project.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "1": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Ready"
+                },
+                "2": {
+                  "color": "blue",
+                  "index": 1,
+                  "text": "Working"
+                },
+                "3": {
+                  "color": "orange",
+                  "index": 2,
+                  "text": "Permission Required"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "blue",
+                "value": 2
+              },
+              {
+                "color": "orange",
+                "value": 3
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_openshell_name"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_source"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      },
+      "id": 408,
+      "options": {
+        "cellHeight": "sm",
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "State"
+          }
+        ]
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "(claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} * 0 + 3) or ((claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} > 0) * 0 + 2) or (claude_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\"} * 0 + 1) or (codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=~\"$sandbox_profile\"} * 0 + 3) or ((codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=~\"$sandbox_profile\"} > 0) * 0 + 2) or (codex_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=~\"$sandbox_profile\"} * 0 + 1)",
+          "refId": "A",
+          "legendFormat": "",
+          "instant": true
+        }
+      ],
+      "title": "Current Sessions",
+      "type": "table",
+      "transformations": [
+        {
+          "id": "labelsToFields",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "location": 0,
+              "session_id": 1,
+              "host_name": 2,
+              "sandbox_profile": 3,
+              "Value": 4
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Estimated Codex API cost by environment using editable hidden pricing variables.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "local"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-work"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-personal"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sb-home"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "light-green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 8,
+        "h": 8
+      },
+      "id": 410,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (env) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | unwrap cost_usd [$__range]))",
+          "legendFormat": "{{env}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{env}}",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{env}}",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0)) + (sum by (env) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or on (env) (sum by (env) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | label_format env=`{{ if .sandbox_profile }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{env}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Cost by Environment",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Estimated Codex API cost by model using editable hidden pricing variables.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 12,
+        "w": 8,
+        "h": 8
+      },
+      "id": 412,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (model_short) (label_replace(sum by (model) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range])), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))",
+          "legendFormat": "{{model_short}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or vector(0))) / 1000000 > 0",
+          "legendFormat": "gpt-5.6-sol",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or vector(0))) / 1000000 > 0",
+          "legendFormat": "gpt-5.6-terra",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or vector(0)) + (sum(sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or vector(0))) / 1000000 > 0",
+          "legendFormat": "gpt-5.6-luna",
+          "refId": "D"
+        }
+      ],
+      "title": "Cost by Model",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Raw native Codex Luna cost by project. The rule-backed comparison is retained separately.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 12,
+        "w": 8,
+        "h": 8
+      },
+      "id": 424,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cost_usd [$__range]))",
+          "legendFormat": "{{project}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap input_token_count [$__range])) * $codex_sol_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cached_token_count [$__range])) * $codex_sol_cached_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap cache_write_token_count [$__range])) * $codex_sol_cache_write_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-sol\" | unwrap output_token_count [$__range])) * $codex_sol_output_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{project}}",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap input_token_count [$__range])) * $codex_terra_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cached_token_count [$__range])) * $codex_terra_cached_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap cache_write_token_count [$__range])) * $codex_terra_cache_write_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-terra\" | unwrap output_token_count [$__range])) * $codex_terra_output_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{project}}",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "((sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap input_token_count [$__range])) * $codex_luna_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cached_token_count [$__range])) * $codex_luna_cached_input_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap cache_write_token_count [$__range])) * $codex_luna_cache_write_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0)) + (sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | model=\"gpt-5.6-luna\" | unwrap output_token_count [$__range])) * $codex_luna_output_rate or on (project) (sum by (project) (count_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" [$__range])) * 0))) / 1000000 > 0",
+          "legendFormat": "{{project}}",
+          "refId": "D"
+        }
+      ],
+      "title": "Cost by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Native Codex token usage by project.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 1,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 20,
+        "w": 24,
+        "h": 8
+      },
+      "id": 423,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap input_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap output_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_read_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap cache_creation_tokens [$__range]))",
+          "legendFormat": "{{project}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (project) (sum_over_time({service_name=\"codex_cli_rs\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | sandbox_profile=~\"$sandbox_profile\" | unwrap tool_token_count [$__range]))",
+          "legendFormat": "{{project}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Tokens by Project",
+      "type": "piechart"
+    }
+  ],
+  "preload": false,
+  "refresh": "10s",
+  "schemaVersion": 42,
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Host",
+        "multi": true,
+        "name": "host_name",
+        "options": [],
+        "query": "label_values({__name__=~\"claude_code_cost_usage_USD_total|codex_turn_token_usage_sum\"}, host_name)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Project (cwd)",
+        "multi": true,
+        "name": "project",
+        "options": [],
+        "query": "label_values({__name__=~\"claude_code_cost_usage_USD_total|codex_turn_token_usage_sum\"}, project)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Sandbox Profile",
+        "multi": true,
+        "name": "sandbox_profile",
+        "options": [],
+        "query": "label_values({__name__=~\"claude_code_cost_usage_USD_total|codex_conversation_event_count\", project=~\"$project\", host_name=~\"$host_name\"}, sandbox_profile)",
+        "refresh": 2,
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Session ID",
+        "multi": true,
+        "name": "session_id",
+        "options": [],
+        "query": "query_result(label_replace(codex_conversation_event_count{project=~\"$project\",host_name=~\"$host_name\"}, \"session_id\", \"$1\", \"conversation_id\", \"(.+)\") or claude_code_cost_usage_USD_total{project=~\"$project\",host_name=~\"$host_name\"})",
+        "refresh": 2,
+        "regex": "/session_id=\"([^\"]+)\"/",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": 2,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "4",
+          "value": "4"
+        },
+        "hide": 2,
+        "name": "codex_sol_input_rate",
+        "query": "4",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0.4",
+          "value": "0.4"
+        },
+        "hide": 2,
+        "name": "codex_sol_cached_input_rate",
+        "query": "0.4",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "5",
+          "value": "5"
+        },
+        "hide": 2,
+        "name": "codex_sol_cache_write_rate",
+        "query": "5",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "20",
+          "value": "20"
+        },
+        "hide": 2,
+        "name": "codex_sol_output_rate",
+        "query": "20",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "2",
+          "value": "2"
+        },
+        "hide": 2,
+        "name": "codex_terra_input_rate",
+        "query": "2",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0.2",
+          "value": "0.2"
+        },
+        "hide": 2,
+        "name": "codex_terra_cached_input_rate",
+        "query": "0.2",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "2.5",
+          "value": "2.5"
+        },
+        "hide": 2,
+        "name": "codex_terra_cache_write_rate",
+        "query": "2.5",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "12",
+          "value": "12"
+        },
+        "hide": 2,
+        "name": "codex_terra_output_rate",
+        "query": "12",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0.2",
+          "value": "0.2"
+        },
+        "hide": 0,
+        "label": "Luna input $/MTok",
+        "name": "codex_luna_input_rate",
+        "query": "0.2",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0.02",
+          "value": "0.02"
+        },
+        "hide": 2,
+        "name": "codex_luna_cached_input_rate",
+        "query": "0.02",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "0.25",
+          "value": "0.25"
+        },
+        "hide": 2,
+        "name": "codex_luna_cache_write_rate",
+        "query": "0.25",
+        "skipUrlSync": true,
+        "type": "textbox"
+      },
+      {
+        "current": {
+          "text": "1.2",
+          "value": "1.2"
+        },
+        "hide": 2,
+        "name": "codex_luna_output_rate",
+        "query": "1.2",
+        "skipUrlSync": true,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Unified - All-in-One",
+  "uid": "unified-all-in-one",
+  "version": 1
+}
