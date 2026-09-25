@@ -131,7 +131,7 @@ groups:
       - record: claude_session_working
         expr: |
           (
-            max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+            max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
@@ -139,7 +139,7 @@ groups:
                 | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
                 | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [10m]
-              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile)
             )
             and on (session_id)
             (
@@ -180,7 +180,7 @@ groups:
           )
           or
           (
-            0 * max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+            0 * max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile) (
               max_over_time(
                 {service_name="claude-code"}
                 | event_name =~ "api_request|tool_decision|tool_result|skill_activated|subagent_completed|user_prompt"
@@ -188,7 +188,7 @@ groups:
                 | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
                 | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
                 | unwrap observed_timestamp [10m]
-              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+              ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile)
             )
           )
 
@@ -214,7 +214,7 @@ groups:
       # parent has stopped too — which is exactly when the review is over.
       - record: claude_session_ready
         expr: |
-          max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+          max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
@@ -222,7 +222,7 @@ groups:
               | label_format session_id=`{{ if .review_orchestrating_session_id }}{{ .review_orchestrating_session_id }}{{ else }}{{ .session_id }}{{ end }}`
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+            ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
           and on (session_id)
           (
@@ -262,7 +262,7 @@ groups:
       # the dashboard, so it would outlive the review until dismissed by hand.
       - record: claude_session_permission
         expr: |
-          max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name) (
+          max by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="claude-code"}
               | event_name = "hook_execution_complete"
@@ -270,7 +270,7 @@ groups:
               | review_orchestrating_session_id = ""
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if hasPrefix "sandbox" .host_name }}~/sandboxes/{{ regexReplaceAll "^sandbox-" .host_name "" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
-            ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name)
+            ) by (session_id, host_name, project, location, headless, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
           and on (session_id)
           (
