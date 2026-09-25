@@ -8,7 +8,27 @@ Claude Code is unaffected if the stack is offline — the OTEL exporter is fire-
 
 ## How it Works
 
-Claude Code uses a shell wrapper to inject OTEL environment variables. Codex uses its native OTEL configuration. Both can send telemetry over OTLP to the local collector, which fans out to Prometheus and Loki; Tempo is available for clients that export traces.
+Claude Code uses a shell wrapper to inject OTEL environment variables. Codex uses its native OTEL configuration. Both can send telemetry over OTLP to the local collector, which fans out to Prometheus and Loki; Tempo is available for clients that export traces. Host process metrics use a separate Prometheus scrape every 30 seconds, keeping their sample volume from changing the 15-second session telemetry scrape.
+
+### Host process metrics
+
+The collector records per-process CPU time, physical memory, and disk I/O. PID, executable name, and full command line are available as Prometheus labels; virtual memory and owner are omitted. Owner lookup inside the container may not map host user IDs reliably. Full command lines can contain sensitive arguments and are retained in local Prometheus. Expect about six active series per running PID; at a 30-second scrape, that is roughly 17,000 samples per continuously running process per day.
+
+In Grafana Explore, filter by part of the command line to inspect CPU, memory, and disk I/O:
+
+```promql
+sum by (process_command_line, process_pid) (
+  rate(process_cpu_time_seconds_total{process_command_line=~".*pattern.*"}[5m])
+)
+
+process_memory_usage_bytes{process_command_line=~".*pattern.*"}
+
+sum by (process_command_line, process_pid) (
+  rate(process_disk_io_bytes_total{process_command_line=~".*pattern.*"}[5m])
+)
+```
+
+After downloading config changes, apply them with `podman-compose up -d otel-collector` and `podman-compose restart prometheus`.
 
 ```mermaid
 flowchart LR
@@ -95,7 +115,7 @@ The `exporter` sends structured OTel logs to Loki. Events include API requests, 
 
 Hook configuration and implementation are maintained in the public [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff) repository and deployed with its `make reconcile`. This repository does not duplicate the hook; it owns the collector, Loki recording rules, and Grafana dashboards that consume the hook telemetry. The hook exports raw lifecycle logs; session state is derived by Loki recording rules and written to Prometheus for Grafana dashboards.
 
-For endpoint routing, use the standard `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable when the endpoint is supplied by the environment, for example `http://localhost:4318`. Use OTLP gRPC on port `4317` when configuring `otlp-grpc`, or OTLP HTTP/protobuf on port `4318` when using HTTP exporters. Port `8889` is the collector's Prometheus scrape endpoint, not an OTLP ingest endpoint. A remote stack can use the same setting with its reachable collector URL.
+For endpoint routing, use the standard `OTEL_EXPORTER_OTLP_ENDPOINT` environment variable when the endpoint is supplied by the environment, for example `http://localhost:4318`. Use OTLP gRPC on port `4317` when configuring `otlp-grpc`, or OTLP HTTP/protobuf on port `4318` when using HTTP exporters. Port `8889` is the collector's session-metrics scrape endpoint and port `8890` is its host-process-metrics endpoint; neither is an OTLP ingest endpoint. A remote stack can use the same setting with its reachable collector URL.
 
 Codex batches exports asynchronously, so exiting a session is useful when validating a new configuration.
 
@@ -185,6 +205,7 @@ The real `config/grafana-datasources.local.yaml` is gitignored — personal endp
 | OTEL Collector (OTLP gRPC) | 4317 |
 | OTEL Collector (OTLP HTTP) | 4318 |
 | OTEL Collector (Prometheus scrape) | 8889 |
+| OTEL Collector (host process metrics) | 8890 |
 
 ## Tear down
 

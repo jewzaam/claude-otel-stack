@@ -4,10 +4,13 @@ services:
     image: otel/opentelemetry-collector-contrib:latest
     volumes:
       - ./config/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:z
+      # /proc is host system content; do not relabel it for SELinux.
+      - /proc:/hostfs/proc:ro
     ports:
       - "127.0.0.1:4317:4317"
       - "127.0.0.1:4318:4318"
       - "127.0.0.1:8889:8889"
+      - "127.0.0.1:8890:8890"
     networks:
       otel:
         ipv4_address: 172.30.0.10

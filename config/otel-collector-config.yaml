@@ -7,9 +7,31 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 
+  hostmetrics:
+    collection_interval: 30s
+    root_path: /hostfs
+    scrapers:
+      process:
+        mute_process_name_error: true
+        mute_process_exe_error: true
+        mute_process_io_error: true
+        resource_attributes:
+          process.command_line:
+            enabled: true
+          process.owner:
+            enabled: false
+        metrics:
+          process.memory.virtual:
+            enabled: false
+
 exporters:
   prometheus:
     endpoint: 0.0.0.0:8889
+    resource_to_telemetry_conversion:
+      enabled: true
+
+  prometheus/host:
+    endpoint: 0.0.0.0:8890
     resource_to_telemetry_conversion:
       enabled: true
 
@@ -26,6 +48,9 @@ service:
     metrics:
       receivers: [otlp]
       exporters: [prometheus]
+    metrics/host:
+      receivers: [hostmetrics]
+      exporters: [prometheus/host]
     logs:
       receivers: [otlp]
       exporters: [otlphttp/loki]
