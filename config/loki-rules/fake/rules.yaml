@@ -329,7 +329,7 @@ groups:
       # resource attributes from the deployed my-codex-stuff Codex hook.
       #
       # `headless` has no Codex equivalent yet: there is no wrapper marking
-      # `codex exec` runs the way claude-wrapper.sh marks `-p`. Absent label
+      # `codex exec` runs the way bin/claude marks `-p`. Absent label
       # reads as interactive downstream, so such runs show as normal sessions.
       #
       # `cwd` and `model` are deliberately NOT grouped on, though the hook
@@ -343,7 +343,7 @@ groups:
       # other direction. `project` is the stable path label: pinned at launch
       # from CODEX_PROJECT or, in a sandbox, from /sandbox/.env. A bare `codex`
       # with no wrapper has neither, so its `project` follows `/cd` and splits
-      # the same way — launch through bin/codex-wrapper.sh.
+      # the same way — resolve `codex` through bin/codex on PATH.
       # READY: SessionStart or Stop is the newest event.
       - record: codex_session_ready
         expr: |

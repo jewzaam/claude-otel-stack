@@ -2,7 +2,7 @@
 
 ## Current status
 
-Claude Code and Codex both export successfully to this stack. Claude Code is configured by `bin/claude-wrapper.sh` and `bin/claude.env`. Codex uses native OTEL settings in the user-level `~/.codex/config.toml`:
+Claude Code and Codex both export successfully to this stack. Claude Code is configured by `bin/claude`. Codex uses native OTEL settings in the user-level `~/.codex/config.toml`:
 
 ```toml
 [otel]

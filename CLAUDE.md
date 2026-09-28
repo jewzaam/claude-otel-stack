@@ -21,8 +21,7 @@ Codex (native OTEL) ───┴→ OTLP :4317/:4318 → OTEL Collector → Prom
 | Path | Purpose |
 |------|---------|
 | `docker-compose.yml` | All 5 services with `:z` SELinux bind mounts |
-| `bin/claude-wrapper.sh` | Claude wrapper — sources claude.env, execs claude with passthrough args |
-| `bin/claude.env` | OTEL env vars including dynamic `project=$(pwd)` (host sessions only) |
+| `bin/claude` | PATH shim — sets host OTEL env vars (skipped when `/sandbox/.env` exists, so a sandbox keeps its own endpoint, protocol and attributes), tags `-p`/`--print` runs, execs `$CLAUDE_CMD` (default `/usr/bin/claude`; `bin/codex` likewise with `$CODEX_CMD`), an absolute path so a shim never execs itself. Also staged into the openshell-sandbox image as `/sandbox/bin/claude` |
 | `bin/dashboard-sync.py` | Bidirectional sync between dashboard JSON files and Grafana API |
 | `systemd/claude-otel-stack.service` | systemd user unit for autostart |
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
@@ -51,7 +50,7 @@ Codex exports structured logs and metrics. Its trace exporter is not required fo
 
 - Codex native OTEL is user-level configuration in `~/.codex/config.toml`. Do not edit `~/.codex/` from this repo.
 - Hook authority lives in the public [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff) repository. Deploy `codex/hooks.json` and `codex/observe-hook.py` from that repository with its `make reconcile`; do not add or maintain a second hook implementation here. This repository owns the collector, recording rules, and dashboards that consume the hook telemetry. The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
-- `bin/codex-wrapper.sh` pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`, and appends it to `OTEL_RESOURCE_ATTRIBUTES`.
+- `bin/codex` (PATH shim, also staged into the sandbox image) pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`. An inherited `project` in `OTEL_RESOURCE_ATTRIBUTES` (sandbox `/sandbox/.env`, or a parent codex) wins and sets `CODEX_PROJECT`; otherwise the launch directory is used and appended as `project`.
 - Inherit the standard `OTEL_EXPORTER_OTLP_ENDPOINT` from the environment. Do not introduce a second endpoint variable for Codex.
 - **The observer passes `OTEL_RESOURCE_ATTRIBUTES` through verbatim** onto the
   OTLP resource, then overlays `service.name`. That is how `host.name`,
@@ -94,7 +93,7 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 - **`project` label** — `$(pwd)` at launch for host sessions; sandbox sessions use the sandbox's host-side directory, injected as `SANDBOX_HOST_DIR` (in-container `$(pwd)` is `/sandbox/source/` for every sandbox). Only available on sessions launched via the wrapper.
 - **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed. Adding a new UID→filename mapping in `dashboard-sync.py` requires restarting the container (`podman-compose restart dashboard-sync`); existing dashboard edits sync without restart.
 - **`host.name` is always the machine, never the sandbox.** Host sessions get
-  `$(hostname)` from `claude.env`. Sandbox sessions get the *creating host's*
+  `$(hostname)` from `bin/claude`. Sandbox sessions get the *creating host's*
   hostname, injected as `SANDBOX_HOST_NAME` into `/sandbox/.env` by
   `openshell-sandbox`, because in-container `hostname` is `sandbox-sb-<hash>` —
   the sandbox, not the machine. Sandbox identity lives in `sandbox_source`.
@@ -177,12 +176,12 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
   - **Lens count comes from `review_agent`**, which is `<lens>/<dimension>` when `review_stage="review"` — count distinct prefixes. A run that never reached the review stage emits none, hence the `or 0 * sum by (review_run_id) (...)` padding: without it an inner join drops the run entirely.
   - In `grafana-dashboard-all-in-one.json`, query A of **Code Reviews** is the only target carrying the dashboard's host/project/env filters. The inner `joinByField` on `review_run_id` is what applies them to every other column — change A's filters, not the others.
 - **Tempo `claude_code.interaction` span carries `user_prompt` as an attribute** (e.g., `user_prompt: "/commit"`). Useful for trace-side attribution of slash commands without joining to Loki events.
-- **OTEL trace export tuning** — `OTEL_BSP_SCHEDULE_DELAY` default is 5000ms. Lowered in `bin/claude.env` to 2000ms with `OTEL_BSP_MAX_EXPORT_BATCH_SIZE=128` and `OTEL_LOGS_EXPORT_INTERVAL=2000` so completed child spans (`llm_request`, `tool`) and events surface faster in dashboards. Caveat: the root `claude_code.interaction` span does NOT close until the interaction ends; no config tweak changes this — long interactions remain invisible to "Interaction Traces" panels until completion.
+- **OTEL trace export tuning** — `OTEL_BSP_SCHEDULE_DELAY` default is 5000ms. Lowered in `bin/claude` to 2000ms with `OTEL_BSP_MAX_EXPORT_BATCH_SIZE=128` and `OTEL_LOGS_EXPORT_INTERVAL=2000` so completed child spans (`llm_request`, `tool`) and events surface faster in dashboards. Caveat: the root `claude_code.interaction` span does NOT close until the interaction ends; no config tweak changes this — long interactions remain invisible to "Interaction Traces" panels until completion.
 
 ## Development notes
 
 - **ShellCheck Fedora package** — `sudo dnf install ShellCheck` (capital S, capital C).
-- **Windows CRLF line endings break shell scripts** — shellcheck flags SC1017 on every line. Sourced env files (e.g., `bin/claude.env`) also break — exported vars get trailing `\r` (e.g., `OTEL_BSP_SCHEDULE_DELAY=2000\r`) which the OTEL SDK silently rejects or misparses. Strip with `sed -i 's/\r$//' <file>` or rewrite via editor with LF endings.
+- **Windows CRLF line endings break shell scripts** — shellcheck flags SC1017 on every line. Sourced env files also break — exported vars get trailing `\r` (e.g., `OTEL_BSP_SCHEDULE_DELAY=2000\r`) which the OTEL SDK silently rejects or misparses. Strip with `sed -i 's/\r$//' <file>` or rewrite via editor with LF endings.
 
 ## Grafana datasource UIDs
 
@@ -283,8 +282,8 @@ with `>`. Each carries the label list **four times** — `max by (...)` and
 returns no series instead of erroring. After editing, run each `expr` against
 Loki directly and check the series count is non-zero.
 
-`headless` is a self-made resource attribute: `bin/claude-wrapper.sh` (user's
-bin repo) appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
+`headless` is a self-made resource attribute: `bin/claude` (this repo, and
+`/sandbox/bin/claude` in the sandbox image) appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
 `-p`/`--print` runs. Claude Code emits no native headless marker (verified
 through 2.1.233 — `query_source` is version-unstable: 2.1.226 interactive
 main-thread requests emitted `repl_main_thread`, 2.1.233 emits `sdk`,
