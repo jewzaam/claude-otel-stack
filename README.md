@@ -34,7 +34,7 @@ After downloading config changes, apply them with `podman-compose up -d otel-col
 flowchart LR
     CC["Claude Code"]
     CX["Codex"]
-    W["claude-wrapper.sh<br/><i>injects OTEL env vars</i>"]
+    W["bin/claude<br/><i>PATH shim, injects OTEL env vars</i>"]
     OC["OTEL Collector<br/>:4317"]
     P["Prometheus<br/><i>metrics</i>"]
     L["Loki<br/><i>events / logs</i>"]
@@ -84,14 +84,14 @@ git clone https://github.com/jewzaam/claude-otel-stack.git
 cd claude-otel-stack
 podman-compose up -d
 
-# 2. Add to ~/.bashrc (one-time)
-alias claude=~/source/claude-otel-stack/bin/claude-wrapper.sh
+# 2. Add to ~/.bashrc (one-time) — put the claude/codex shims first on PATH
+export PATH=~/source/claude-otel-stack/bin:$PATH
 
 # 3. Launch Claude — telemetry flows automatically
 claude
 ```
 
-The wrapper sets OTEL env vars and injects `project=$(pwd)` at launch time, so each session is tagged with the directory it was started from. See `bin/claude-wrapper.sh` for the full list of vars.
+`bin/claude` sets the OTEL env vars and injects `project=$(pwd)` at launch time, so each session is tagged with the directory it was started from, then execs `$CLAUDE_CMD` (default `/usr/bin/claude` — export it if yours is elsewhere; `bin/codex` uses `$CODEX_CMD`). Being on `PATH` rather than an alias, it also covers scripts and nested `claude -p` calls. See `bin/claude` for the full list of vars.
 
 ### Codex
 

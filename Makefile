@@ -34,6 +34,7 @@ test-lint-python:  ## Compile-check Python scripts
 test-self-checks:  ## Run script self-checks that need no network
 	@echo "==> Running script self-checks"
 	python3 scripts/measure-turn-gaps.py --self-check
+	bash tests/test-wrappers.sh
 
 export-codex-otel-audit:  ## Export retained Codex OTEL sessions (DAYS=30 OUTPUT=codex-otel.json)
 	@python3 scripts/export-codex-otel-audit.py --days "$(or $(DAYS),30)" --output "$(or $(OUTPUT),codex-otel.json)" $(if $(LOKI_URL),--loki-url "$(LOKI_URL)") $(if $(PROJECT),--project "$(PROJECT)")
@@ -47,7 +48,7 @@ measure-turn-gaps:  ## Measure longest OTEL-silent stretch inside a turn (DAYS=7
 test-lint-shell:  ## Lint shell scripts with shellcheck
 	@echo "==> Checking shell scripts"
 	@if command -v shellcheck > /dev/null 2>&1; then \
-		shellcheck bin/claude-wrapper.sh bin/codex-wrapper.sh && echo "OK"; \
+		shellcheck bin/claude bin/codex tests/test-wrappers.sh && echo "OK"; \
 	else \
 		echo "SKIP: shellcheck not installed"; \
 	fi
