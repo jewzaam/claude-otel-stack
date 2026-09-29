@@ -12,23 +12,41 @@ Claude Code uses a shell wrapper to inject OTEL environment variables. Codex use
 
 ### Host process metrics
 
-The collector records per-process CPU time, physical memory, and disk I/O. PID, executable name, and full command line are available as Prometheus labels; virtual memory and owner are omitted. Owner lookup inside the container may not map host user IDs reliably. Full command lines can contain sensitive arguments and are retained in local Prometheus. Expect about six active series per running PID; at a 30-second scrape, that is roughly 17,000 samples per continuously running process per day.
+Per-command CPU, memory, and disk I/O come from the host-installed [process-exporter](https://github.com/ncabatoff/process-exporter). The OTel collector no longer scrapes host `/proc`.
 
-In Grafana Explore, filter by part of the command line to inspect CPU, memory, and disk I/O:
+On Fedora x86_64, download the `process-exporter_0.8.7_linux_amd64.rpm` asset from the [upstream v0.8.7 release](https://github.com/ncabatoff/process-exporter/releases/tag/v0.8.7), then install it:
+
+```bash
+sudo dnf install ./process-exporter_0.8.7_linux_amd64.rpm
+```
+
+The package provides a root systemd service. Set `/etc/default/process-exporter` so it binds only to the OTel bridge gateway, disables thread-level metrics, and removes inactive groups:
+
+```bash
+sudo tee /etc/default/process-exporter >/dev/null <<'EOF'
+OPTS="--config.path /etc/process-exporter/all.yaml --web.listen-address=172.30.0.1:9256 --threads=false --children=false --remove-empty-groups=true"
+EOF
+sudo systemctl enable --now process-exporter
+```
+
+The packaged config groups processes by executable name. The packaged service runs as root so it can read host process counters; the metrics endpoint is bound only to the OTel bridge. Use command-line regex captures in `/etc/process-exporter/all.yaml` to distinguish invocations that share an executable. PID-based group names are available for temporary investigations, but increase cardinality.
+
+The Prometheus target is `172.30.0.1:9256`, the host gateway for the `otel` bridge (`172.30.0.0/24`). If `up{job="host-process-exporter"}` is 0, check the actual bridge gateway with `podman network inspect` and use it for both the exporter listen address and scrape target.
+
+In Grafana Explore, query the process groups:
 
 ```promql
-sum by (process_command_line, process_pid) (
-  rate(process_cpu_time_seconds_total{process_command_line=~".*pattern.*"}[5m])
-)
+topk(20, rate(namedprocess_namegroup_cpu_seconds_total{job="host-process-exporter"}[5m]))
 
-process_memory_usage_bytes{process_command_line=~".*pattern.*"}
+topk(20, namedprocess_namegroup_memory_bytes{job="host-process-exporter",memtype="resident"})
 
-sum by (process_command_line, process_pid) (
-  rate(process_disk_io_bytes_total{process_command_line=~".*pattern.*"}[5m])
+topk(20,
+  rate(namedprocess_namegroup_read_bytes_total{job="host-process-exporter"}[5m]) +
+  rate(namedprocess_namegroup_write_bytes_total{job="host-process-exporter"}[5m])
 )
 ```
 
-After downloading config changes, apply them with `podman-compose up -d otel-collector` and `podman-compose restart prometheus`.
+After downloading config changes, recreate the collector and Prometheus with `podman-compose up -d --force-recreate otel-collector prometheus`.
 
 ```mermaid
 flowchart LR
@@ -205,7 +223,7 @@ The real `config/grafana-datasources.local.yaml` is gitignored — personal endp
 | OTEL Collector (OTLP gRPC) | 4317 |
 | OTEL Collector (OTLP HTTP) | 4318 |
 | OTEL Collector (Prometheus scrape) | 8889 |
-| OTEL Collector (host process metrics) | 8890 |
+| process-exporter (host OTel bridge) | 9256 |
 
 ## Tear down
 
