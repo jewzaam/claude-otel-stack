@@ -8,7 +8,7 @@ scrape_configs:
     static_configs:
       - targets: ["otel-collector:8889"]
 
-  - job_name: otel-host-processes
+  - job_name: host-process-exporter
     scrape_interval: 30s
     static_configs:
-      - targets: ["otel-collector:8890"]
+      - targets: ["172.30.0.1:9256"]
