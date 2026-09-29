@@ -20,18 +20,26 @@ On Fedora x86_64, download the `process-exporter_0.8.7_linux_amd64.rpm` asset fr
 sudo dnf install ./process-exporter_0.8.7_linux_amd64.rpm
 ```
 
-The package provides a root systemd service. Set `/etc/default/process-exporter` so it binds only to the OTel bridge gateway, disables thread-level metrics, and removes inactive groups:
+The package provides a root systemd service. Configure it to listen on port 9256, disable thread-level metrics, and remove inactive groups:
 
 ```bash
 sudo tee /etc/default/process-exporter >/dev/null <<'EOF'
-OPTS="--config.path /etc/process-exporter/all.yaml --web.listen-address=172.30.0.1:9256 --threads=false --children=false --remove-empty-groups=true"
+OPTS="--config.path /etc/process-exporter/all.yaml --web.listen-address=:9256 --threads=false --children=false --remove-empty-groups=true"
 EOF
 sudo systemctl enable --now process-exporter
+sudo systemctl restart process-exporter
 ```
 
-The packaged config groups processes by executable name. The packaged service runs as root so it can read host process counters; the metrics endpoint is bound only to the OTel bridge. Use command-line regex captures in `/etc/process-exporter/all.yaml` to distinguish invocations that share an executable. PID-based group names are available for temporary investigations, but increase cardinality.
+The packaged config groups processes by executable name. The service runs as root so it can read host process counters. `172.30.0.1` is the container network gateway, and rootless Podman may not assign it to the host, so binding the host service there fails with `cannot assign requested address`. Prometheus reaches the host through Podman's `host.containers.internal` hostname, which Podman adds to containers when it can determine the host gateway ([Podman docs](https://docs.podman.io/en/stable/markdown/podman-run.1.html)). The `:9256` listener accepts on all host interfaces; restrict port 9256 with the host firewall if other machines must not reach it. Use command-line regex captures in `/etc/process-exporter/all.yaml` to distinguish invocations that share an executable. PID-based group names are available for temporary investigations, but increase cardinality.
 
-The Prometheus target is `172.30.0.1:9256`, the host gateway for the `otel` bridge (`172.30.0.0/24`). If `up{job="host-process-exporter"}` is 0, check the actual bridge gateway with `podman network inspect` and use it for both the exporter listen address and scrape target.
+After changing `/etc/default/process-exporter` on an existing install, clear systemd's start limit and restart it:
+
+```bash
+sudo systemctl reset-failed process-exporter
+sudo systemctl restart process-exporter
+```
+
+The Prometheus target is `host.containers.internal:9256`.
 
 In Grafana Explore, query the process groups:
 
