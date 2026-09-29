@@ -41,6 +41,12 @@ sudo systemctl restart process-exporter
 
 The Prometheus target is `host.containers.internal:9256`.
 
+`Host Process Overview` summarizes consumption across all process groups. `Process Group Explorer` filters by a `groupname` regex and shows matching groups. Both use process totals; they do not show host CPU or memory utilization percentages. After adding these dashboards on an existing stack, restart `dashboard-sync` to load their UID mappings:
+
+```bash
+podman-compose restart dashboard-sync
+```
+
 In Grafana Explore, query the process groups:
 
 ```promql

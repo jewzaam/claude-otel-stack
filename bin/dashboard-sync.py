@@ -31,6 +31,8 @@ DASHBOARDS = {
     "unified-all-in-one": "grafana-dashboard-unified-all-in-one.json",
     "codex": "grafana-dashboard-codex.json",
     "codex-cost-by-day": "grafana-dashboard-codex-cost-by-day.json",
+    "host-process-overview": "grafana-dashboard-host-process-overview.json",
+    "host-process-explorer": "grafana-dashboard-host-process-explorer.json",
 }
 
 
