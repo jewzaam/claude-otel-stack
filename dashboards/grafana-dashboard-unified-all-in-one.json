@@ -248,15 +248,12 @@
           "expr": "(((((claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 3) * $env_sb_personal) > 0)) or (((((claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 3) * $env_sb_work) > 0)) or (((((claude_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 3) * $env_local) > 0)) or (((((claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 2) * $env_sb_personal) > 0)) or (((((claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 2) * $env_sb_work) > 0)) or (((((claude_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 2) * $env_local) > 0)) or (((((claude_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 1) * $env_sb_personal) > 0)) or (((((claude_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 1) * $env_sb_work) > 0)) or (((((claude_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 1) * $env_local) > 0)) or (((((codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 3) * $env_sb_personal) > 0)) or (((((codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 3) * $env_sb_work) > 0)) or (((((codex_session_permission{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 3) * $env_local) > 0)) or (((((codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 2) * $env_sb_personal) > 0)) or (((((codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 2) * $env_sb_work) > 0)) or (((((codex_session_working{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 2) * $env_local) > 0)) or (((((codex_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"personal\"} > 0) * 0 + 1) * $env_sb_personal) > 0)) or (((((codex_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"work\"} > 0) * 0 + 1) * $env_sb_work) > 0)) or (((((codex_session_ready{project=~\"$project\",host_name=~\"$host_name\",session_id=~\"$session_id\",sandbox_profile=\"\"} > 0) * 0 + 1) * $env_local) > 0))",
           "instant": true,
           "legendFormat": "",
-          "refId": "A"
+          "refId": "A",
+          "format": "table"
         }
       ],
       "title": "Current Sessions",
       "transformations": [
-        {
-          "id": "labelsToFields",
-          "options": {}
-        },
         {
           "id": "organize",
           "options": {
