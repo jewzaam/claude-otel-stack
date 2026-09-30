@@ -54,7 +54,7 @@
             "pointSize": 3,
             "scaleDistribution": {
               "log": 2,
-              "type": "log"
+              "type": "symlog"
             },
             "showPoints": "never",
             "showValues": false,
@@ -160,7 +160,7 @@
             "pointSize": 3,
             "scaleDistribution": {
               "log": 2,
-              "type": "log"
+              "type": "symlog"
             },
             "showPoints": "never",
             "showValues": false,
