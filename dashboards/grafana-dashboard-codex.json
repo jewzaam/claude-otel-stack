@@ -301,7 +301,7 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
-      "description": "Estimated Codex API cost from native response-completion events. Rates are USD per million tokens and apply retroactively to the selected time range.",
+      "description": "Codex-reported usage cost is shown alongside the retained token-priced API estimate. The reported metric is in micro-USD and is not automatically an API bill for ChatGPT/Enterprise auth.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -374,9 +374,19 @@
           "queryType": "range",
           "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "sum by (auth_mode) (max_over_time(codex_turn_cost_microusd_total{project=~\"$project\", host_name=~\"$host_name\", conversation_id=~\"$session_id\"}[$__range])) / 1000000",
+          "instant": true,
+          "legendFormat": "{{auth_mode}} reported",
+          "refId": "C"
         }
       ],
-      "title": "Total Cost",
+      "title": "Reported / Estimated Cost",
       "type": "stat"
     },
     {

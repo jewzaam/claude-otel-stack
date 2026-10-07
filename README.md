@@ -143,7 +143,7 @@ metrics_exporter = { otlp-grpc = {
 } }
 ```
 
-The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex token totals are available as `codex_turn_token_usage_sum{token_type="total"}`.
+The `exporter` sends structured OTel logs to Loki. Events include API requests, SSE/WebSocket events, prompts, tool decisions, and tool results. `metrics_exporter` sends Codex counters and duration histograms through the collector to Prometheus. Codex token totals are available as `codex_turn_token_usage_sum{token_type="total"}`. After switching from API-key auth to an Enterprise subscription, `codex_turn_cost_microusd_total` appeared in the exports as Codex-reported per-turn usage cost in micro-USD; this was an auth-mode change, not a Codex version change.
 
 Hook configuration and implementation are maintained in the public [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff) repository and deployed with its `make reconcile`. This repository does not duplicate the hook; it owns the collector, Loki recording rules, and Grafana dashboards that consume the hook telemetry. The hook exports raw lifecycle logs; session state is derived by Loki recording rules and written to Prometheus for Grafana dashboards.
 
