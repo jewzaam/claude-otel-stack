@@ -26,7 +26,7 @@ The Codex `conversation_id` (reported as `session_id` in the telemetry used here
 
 Traces are deferred. They remain available in the stack for clients that find them useful, but they have not provided enough value in this workflow to make Codex trace export part of the baseline.
 
-Token and cost telemetry is harness-specific and must be verified against live exports rather than inferred from names or dashboard shape. Codex exposes token metrics, but there is currently no authoritative Codex cost field in this stack; Claude's cost metrics should not be assumed to have a Codex equivalent.
+Token and cost telemetry is harness-specific and must be verified against live exports rather than inferred from names or dashboard shape. After switching from API-key auth to an Enterprise subscription, `codex_turn_cost_microusd_total` appeared in the exports as a CLI-reported per-turn usage-cost metric; this was an auth-mode change, not a Codex version change. Keep token-derived API pricing as a separate estimate: subscription usage is governed by plan limits, credits, or the workspace agreement, not necessarily an API bill.
 
 ## What's Available
 
