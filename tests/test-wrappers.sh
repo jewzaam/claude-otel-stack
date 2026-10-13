@@ -45,11 +45,12 @@ export CLAUDE_CMD="$TMP/native/claude" CODEX_CMD="$TMP/native/codex"
 touch "$TMP/sandbox.env"
 for layout in host sandbox; do
     mkdir -p "$TMP/$layout-bin"
-    cp "$REPO_ROOT/bin/codex" "$TMP/$layout-bin/"
 done
 sed "s|/sandbox/\.env|$TMP/absent.env|g" "$REPO_ROOT/bin/claude" > "$TMP/host-bin/claude"
 sed "s|/sandbox/\.env|$TMP/sandbox.env|g" "$REPO_ROOT/bin/claude" > "$TMP/sandbox-bin/claude"
-chmod +x "$TMP/host-bin/claude" "$TMP/sandbox-bin/claude"
+sed "s|/sandbox/\.env|$TMP/absent.env|g" "$REPO_ROOT/bin/codex" > "$TMP/host-bin/codex"
+sed "s|/sandbox/\.env|$TMP/sandbox.env|g" "$REPO_ROOT/bin/codex" > "$TMP/sandbox-bin/codex"
+chmod +x "$TMP/host-bin/claude" "$TMP/sandbox-bin/claude" "$TMP/host-bin/codex" "$TMP/sandbox-bin/codex"
 
 # A symlink to the wrapper earlier on PATH than the wrapper itself.
 mkdir -p "$TMP/link"
@@ -146,11 +147,18 @@ out="$(env -u OTEL_RESOURCE_ATTRIBUTES PATH="$SANDBOX_PATH" timeout 5 claude -p 
 check "claude sandbox: stripped nested run gets no project, no leading comma" \
     "attrs=headless=true" "$(grep '^attrs=' <<< "$out")"
 
-# --- codex: project from launch dir, unless one is already present ---------
+# --- codex: host uses launch dir, sandbox keeps inherited project ---------
 out="$(cd "$TMP" && env -u CODEX_PROJECT -u OTEL_RESOURCE_ATTRIBUTES \
     PATH="$HOST_PATH" timeout 5 codex < /dev/null)"
 check "codex: CODEX_PROJECT is launch dir" "codex_project=$TMP" "$(grep '^codex_project=' <<< "$out")"
 check "codex: project attr added when absent" "attrs=project=$TMP" "$(grep '^attrs=' <<< "$out")"
+
+out="$(cd "$TMP" && env -u CODEX_PROJECT OTEL_RESOURCE_ATTRIBUTES="project=/stale,host.name=h" \
+    PATH="$HOST_PATH" timeout 5 codex < /dev/null)"
+check "codex host: inherited project replaced with launch dir" \
+    "codex_project=$TMP" "$(grep '^codex_project=' <<< "$out")"
+check "codex host: other inherited attrs preserved" \
+    "attrs=host.name=h,project=$TMP" "$(grep '^attrs=' <<< "$out")"
 
 out="$(cd "$TMP" && env -u CODEX_PROJECT OTEL_RESOURCE_ATTRIBUTES="project=/sb,host.name=h" \
     PATH="$SANDBOX_PATH" timeout 5 codex < /dev/null)"

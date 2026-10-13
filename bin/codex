@@ -7,20 +7,26 @@
 
 set -euo pipefail
 
-# The hook payload's cwd follows the current Codex directory. Capture a
-# project identity separately so hooks have one that survives /cd.
-#
-# An inherited project wins over the launch directory: a sandbox carries it in
-# OTEL_RESOURCE_ATTRIBUTES from /sandbox/.env (its $PWD is /sandbox/source/ in
-# every sandbox), and a nested codex inherits its parent's. CODEX_PROJECT
-# follows it so the two cannot disagree. Anchored on the key so e.g.
-# sandbox.project= does not count.
+# Host invocations use their launch directory. Sandbox paths are shared, so
+# sandbox invocations retain the inherited project identity.
 project_attr=',project=([^,]*),'
-if [[ ",${OTEL_RESOURCE_ATTRIBUTES:-}," =~ $project_attr ]]; then
-    export CODEX_PROJECT="${CODEX_PROJECT:-${BASH_REMATCH[1]}}"
+if [[ -f /sandbox/.env ]]; then
+    if [[ ",${OTEL_RESOURCE_ATTRIBUTES:-}," =~ $project_attr ]]; then
+        export CODEX_PROJECT="${CODEX_PROJECT:-${BASH_REMATCH[1]}}"
+    else
+        export CODEX_PROJECT="${CODEX_PROJECT:-$PWD}"
+        export OTEL_RESOURCE_ATTRIBUTES="${OTEL_RESOURCE_ATTRIBUTES:+${OTEL_RESOURCE_ATTRIBUTES},}project=${CODEX_PROJECT}"
+    fi
 else
-    export CODEX_PROJECT="${CODEX_PROJECT:-$PWD}"
-    export OTEL_RESOURCE_ATTRIBUTES="${OTEL_RESOURCE_ATTRIBUTES:+${OTEL_RESOURCE_ATTRIBUTES},}project=${CODEX_PROJECT}"
+    export CODEX_PROJECT="$PWD"
+    IFS=, read -ra attrs <<< "${OTEL_RESOURCE_ATTRIBUTES:-}"
+    host_attrs=
+    for attr in "${attrs[@]}"; do
+        if [[ -n "$attr" && "$attr" != project=* ]]; then
+            host_attrs="${host_attrs:+${host_attrs},}${attr}"
+        fi
+    done
+    export OTEL_RESOURCE_ATTRIBUTES="${host_attrs:+${host_attrs},}project=${CODEX_PROJECT}"
 fi
 
 # The native CLI by path, not by PATH lookup, so this shim can never reach
