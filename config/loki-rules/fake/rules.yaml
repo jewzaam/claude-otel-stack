@@ -344,13 +344,13 @@ groups:
       # from CODEX_PROJECT or, in a sandbox, from /sandbox/.env. A bare `codex`
       # with no wrapper has neither, so its `project` follows `/cd` and splits
       # the same way — resolve `codex` through bin/codex on PATH.
-      # READY: SessionStart or Stop is the newest event.
+      # READY: SessionStart, Stop, or SessionEnd is the newest event.
       - record: codex_session_ready
         expr: |
           max by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             max_over_time(
               {service_name="codex-hook-observer"}
-              | hook_event_name =~ "SessionStart|Stop"
+              | hook_event_name =~ "SessionStart|Stop|SessionEnd"
               | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if .cwd }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .cwd "~" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
@@ -360,7 +360,7 @@ groups:
             max by (session_id) (
               max_over_time(
                 {service_name="codex-hook-observer"}
-                | hook_event_name =~ "SessionStart|Stop"
+                | hook_event_name =~ "SessionStart|Stop|SessionEnd"
                 | unwrap observed_timestamp [30m]
               ) by (session_id)
             )
