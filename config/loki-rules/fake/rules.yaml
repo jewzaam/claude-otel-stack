@@ -305,9 +305,9 @@ groups:
         expr: |
           sum by (conversation_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile) (
             count_over_time(
-              {service_name="codex_cli_rs"}
+              {service_name=~"(codex_cli_rs|codex-app-server)"}
               | conversation_id != ""
-              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if .cwd }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .cwd "~" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               [30d]
             )
           )
@@ -351,7 +351,7 @@ groups:
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name =~ "SessionStart|Stop"
-              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if .cwd }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .cwd "~" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
@@ -380,7 +380,7 @@ groups:
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name =~ "UserPromptSubmit|PreToolUse|PostToolUse|PreCompact|PostCompact|SubagentStart|SubagentStop"
-              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if .cwd }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .cwd "~" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
@@ -409,7 +409,7 @@ groups:
             max_over_time(
               {service_name="codex-hook-observer"}
               | hook_event_name = "PermissionRequest"
-              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
+              | label_format location=`{{ if .sandbox_source }}~/sandboxes/{{ .sandbox_source }}{{ else if .cwd }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .cwd "~" }}{{ else }}{{ regexReplaceAll "^(/home/[^/]+|/Users/[^/]+)" .project "~" }}{{ end }}`
               | unwrap observed_timestamp [30m]
             ) by (session_id, host_name, project, location, sandbox_source, sandbox_openshell_name, sandbox_profile)
           )
