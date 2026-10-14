@@ -78,7 +78,7 @@ STUB_EXIT=7 run "$HOST_PATH" codex > /dev/null
 check "codex: exit status passes through" 7 "$?"
 
 out="$(PATH="$HOST_PATH" timeout 5 codex "x y" <<< "piped")"
-check "codex: args and stdin pass through" $'arg=x y\nstdin=piped' \
+check "codex: adds no-daemon and passes args/stdin" $'arg=--no-daemon\narg=x y\nstdin=piped' \
     "$(grep -e '^arg=' -e '^stdin=' <<< "$out")"
 
 # --- no recursion ------------------------------------------------------------
@@ -97,7 +97,7 @@ for name in claude codex; do
     out="$(run "$many_path" "$name" marker)"
     check "$name: three copies + symlink + original on PATH, exits 0" 0 "$?"
     check "$name: three copies + symlink + original on PATH, reaches stub" \
-        "arg=marker" "$(grep '^arg=' <<< "$out")"
+        "arg=marker" "$(grep '^arg=' <<< "$out" | tail -n1)"
 done
 
 CLAUDE_CMD="$TMP/missing" run "$HOST_PATH" claude > /dev/null 2>&1

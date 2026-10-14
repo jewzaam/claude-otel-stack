@@ -36,4 +36,4 @@ fi
 # ponytail: an absolute path pointing at a shim copy still loops; not guarded.
 CODEX_CMD="${CODEX_CMD:-/usr/bin/codex}"
 [[ "$CODEX_CMD" == /* ]] || { echo "codex: CODEX_CMD must be an absolute path, got '$CODEX_CMD'" >&2; exit 127; }
-exec "$CODEX_CMD" "$@"
+exec "$CODEX_CMD" "--no-daemon" "$@"
