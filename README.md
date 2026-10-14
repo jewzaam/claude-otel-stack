@@ -151,6 +151,8 @@ For endpoint routing, use the standard `OTEL_EXPORTER_OTLP_ENDPOINT` environment
 
 Codex batches exports asynchronously, so exiting a session is useful when validating a new configuration.
 
+Codex's managed app-server daemon shares the environment from its startup across separate clients. The repo's `bin/codex` shim passes `--no-daemon` so project-specific telemetry uses the invoking client's environment. This bypasses a shared daemon even when one is already running. When launching Codex directly, use `codex --no-daemon`. `codex features disable daemon_auto_start` disables automatic startup of the daemon. It does not guarantee that a client will avoid attaching to an already-running daemon.
+
 Codex does not need to export traces for this stack. The Tempo service and trace pipeline remain available, but the useful Codex signals currently land in Loki and Prometheus.
 
 See the [Codex observability and telemetry documentation](https://learn.chatgpt.com/docs/config-file/config-advanced#observability-and-telemetry) and [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference#otelmetrics_exporter).
