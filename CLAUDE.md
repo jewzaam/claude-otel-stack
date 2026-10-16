@@ -84,7 +84,17 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 
 - **This repo is upstream for the k3s deployment** — `setup-k3s` generates its copies from here via `make build-claude-loki-rules` and `make build-claude-dashboards` (both under `make build-claude-otel`), which the user runs. Edit `config/loki-rules/` and `dashboards/` here only; `setup-k3s/gitops/apps/` is generated and gets overwritten. Nothing is live on the cluster until that sync runs and the Loki ruler reloads.
 
-- **Dashboard changes require query validation** — after ANY dashboard JSON edit, validate every modified query against the OTEL stack (Prometheus, Loki, Tempo) if reachable. Check: correct separator per query language (`,` for PromQL, `|` for LogQL, `&&` for TraceQL), balanced braces/parens, include/exclude filter parity, and that queries actually return data. Do this automatically — never wait to be asked.
+- **Validate every change before reporting it done** — run `make check` and exercise the changed behavior with representative real data. Check the result the user sees, not just syntax or an intermediate query. Report the observed result and any path that could not be verified.
+- **Dashboard changes require end-to-end validation** — after ANY dashboard JSON edit, run each modified query against the live OTEL stack (Prometheus, Loki, Tempo) with dashboard variables filled in. Check query syntax, filter parity, and expected positive and empty results. For mixed datasources or transformations, also evaluate the complete panel through Grafana's `/api/ds/query`; a successful backend query can still render as `$0.00` or No Data. Confirm dashboard-sync deployed the edited panel through `/api/dashboards/uid/<uid>`, then render the panel in headless Chrome and inspect the screenshot. Do this automatically — never wait to be asked. When changing a cost fallback, verify both reported-cost and fallback examples.
+
+  ```sh
+  google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage \
+    --window-size=1200,600 --virtual-time-budget=10000 \
+    --screenshot=/tmp/grafana-panel.png \
+    'http://localhost:3000/d/<uid>/<slug>?viewPanel=<panel-id>&from=now-24h&to=now'
+  ```
+
+  Add the relevant `var-...` URL parameters before rendering, then open `/tmp/grafana-panel.png` with the image viewer and compare the displayed value with the live query result.
 
 - **Loki structured metadata** — OTLP attributes are stored as structured metadata, NOT labels. Only `service_name` is a label. Filter with `| field="value"` after the stream selector, not inside `{}`. `unwrap` works on numeric structured metadata fields (e.g., `sum(sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [1h]))` verified against live Loki — older note in `docs/tips.md` claiming otherwise is wrong). Structured metadata fields support `=~` regex match operator, enabling Grafana variable substitution with "All" option (substitutes `.*`).
 - **Loki `label_values()` only returns true labels** — `service_name` plus any k8s-injected labels. Structured metadata (`session_id`, `project`, `command_name`, `prompt_id`) is NOT enumerable via Grafana variable query type 1. Use Prometheus `label_values(claude_code_cost_usage_USD_total, project)` for template variables, or hardcode allowed values. The Loki `/loki/api/v1/detected_field/{name}/values` endpoint returns structured-metadata values but Grafana's dashboard JSON variable format does not expose it cleanly.
