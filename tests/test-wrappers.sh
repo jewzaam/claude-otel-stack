@@ -111,14 +111,25 @@ check "claude: bare-name CLAUDE_CMD refused, not looped" 127 "$?"
 CODEX_CMD=codex run "$HOST_PATH" codex > /dev/null 2>&1
 check "codex: bare-name CODEX_CMD refused, not looped" 127 "$?"
 
+# Drive-letter paths (native Windows make rewrites /c/... to C:/...) pass the
+# absolute-path check; a missing target still fails at exec, not the check.
+CLAUDE_CMD='C:/no/such/claude' run "$HOST_PATH" claude 2>&1 | grep -q 'must be an absolute path'
+check "claude: drive-letter CLAUDE_CMD accepted as absolute" 1 "$?"
+CODEX_CMD='C:\no\such\codex' run "$HOST_PATH" codex 2>&1 | grep -q 'must be an absolute path'
+check "codex: drive-letter CODEX_CMD accepted as absolute" 1 "$?"
+
 # --- claude: host sets telemetry, sandbox keeps what it inherited ----------
 check "test setup: sandbox check rewritten in host copy" 1 \
     "$(grep -c "! -f $TMP/absent.env" "$TMP/host-bin/claude")"
 
 out="$(OTEL_EXPORTER_OTLP_ENDPOINT=http://inherited:4318 run "$HOST_PATH" claude)"
-check "claude host: host endpoint applies" \
-    "endpoint=http://localhost:4317" "$(grep '^endpoint=' <<< "$out")"
+check "claude host: inherited endpoint kept" \
+    "endpoint=http://inherited:4318" "$(grep '^endpoint=' <<< "$out")"
 check "claude host: not headless without -p" "" "$(grep -o 'headless=true' <<< "$out")"
+
+out="$(env -u OTEL_EXPORTER_OTLP_ENDPOINT PATH="$HOST_PATH" timeout 5 claude < /dev/null)"
+check "claude host: localhost endpoint when none set" \
+    "endpoint=http://localhost:4317" "$(grep '^endpoint=' <<< "$out")"
 
 out="$(cd "$TMP" && OTEL_RESOURCE_ATTRIBUTES="review.run_id=x,project=/stale" \
     PATH="$HOST_PATH" timeout 5 claude -p < /dev/null)"
