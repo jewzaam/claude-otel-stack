@@ -35,6 +35,6 @@ fi
 # on PATH and land back here, so only an absolute path is accepted. A drive
 # letter counts: native Windows make hands /c/... to recipes as C:/...
 # ponytail: an absolute path pointing at a shim copy still loops; not guarded.
-CODEX_CMD="${CODEX_CMD:-/usr/bin/codex}"
+CODEX_CMD="${CODEX_CMD:-/usr/local/bin/codex}"
 [[ "$CODEX_CMD" == /* || "$CODEX_CMD" == [A-Za-z]:[/\\]* ]] || { echo "codex: CODEX_CMD must be an absolute path, got '$CODEX_CMD'" >&2; exit 127; }
 exec "$CODEX_CMD" "--no-daemon" "$@"
