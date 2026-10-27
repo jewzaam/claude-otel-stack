@@ -418,7 +418,7 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
-      "description": "Total tokens from the native Codex counter.",
+      "description": "Claude and Codex input, output, and cache token counts.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -473,7 +473,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "((sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap input_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap output_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cache_creation_tokens [$__range]))) or vector(0)) + (sum(sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap tool_token_count [$__range])) or vector(0))",
+          "expr": "(sum((sum(sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum(sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])))) or vector(0)) + (sum((sum(sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum(sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum(sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum(sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range])))) or vector(0))",
           "legendFormat": "",
           "refId": "A"
         }
@@ -567,7 +567,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 5,
         "x": 0,
         "y": 8
       },
@@ -639,81 +639,9 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 8,
+        "w": 7,
+        "x": 5,
         "y": 8
-      },
-      "id": 424,
-      "options": {
-        "legend": {
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "values": [
-            "value"
-          ]
-        },
-        "pieType": "donut",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "sort": "desc",
-        "tooltip": {
-          "hideZeros": true,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "13.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "loki",
-            "uid": "P8E80F9AEF21F6940"
-          },
-          "editorMode": "code",
-          "expr": "sum by (project) (label_replace((sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cost_usd [$__range]))), \"cost_source\", \"claude\", \"project\", \".*\") or label_replace((sum by (project) ((((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.turn_cost\" | unwrap usage_estimated_usd [$__range])) > 0) unless on (conversation_id, model, project, env) (sum by (conversation_id, model, project, env) (count_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.turn_cost\" | usage_estimated_usd <= 0 [$__range])))) or on (conversation_id, model, project, env) (((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap input_token_count [$__range])) * ($codex_sol_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap cached_token_count [$__range])) * (($codex_sol_cached_input_rate) - ($codex_sol_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap cache_write_token_count [$__range])) * ($codex_sol_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap output_token_count [$__range])) * ($codex_sol_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap input_token_count [$__range])) * ($codex_terra_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap cached_token_count [$__range])) * (($codex_terra_cached_input_rate) - ($codex_terra_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap cache_write_token_count [$__range])) * ($codex_terra_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap output_token_count [$__range])) * ($codex_terra_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap input_token_count [$__range])) * ($codex_luna_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap cached_token_count [$__range])) * (($codex_luna_cached_input_rate) - ($codex_luna_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap cache_write_token_count [$__range])) * ($codex_luna_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap output_token_count [$__range])) * ($codex_luna_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap input_token_count [$__range])) * ($codex_astra_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap cached_token_count [$__range])) * (($codex_astra_cached_input_rate) - ($codex_astra_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap cache_write_token_count [$__range])) * ($codex_astra_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap output_token_count [$__range])) * ($codex_astra_output_rate)) / 1000000))))), \"cost_source\", \"codex\", \"project\", \".*\"))",
-          "instant": true,
-          "legendFormat": "{{project}}",
-          "queryType": "instant",
-          "range": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Project",
-      "type": "piechart"
-    },
-    {
-      "datasource": {
-        "type": "loki",
-        "uid": "P8E80F9AEF21F6940"
-      },
-      "description": "Codex-reported usage cost per conversation and model, with token-priced API-equivalent estimates when reported cost is missing or any turn reports zero. Includes headless review workers (codex_exec). Estimates use the hidden pricing variables and are not subscription invoices.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "decimals": 2,
-          "unit": "currencyUSD"
-        }
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 16
       },
       "id": 412,
       "options": {
@@ -764,7 +692,221 @@
         "type": "loki",
         "uid": "P8E80F9AEF21F6940"
       },
-      "description": "Native Codex token usage by project.",
+      "description": "Claude and Codex input, output, and cache tokens by environment.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 1,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 5,
+        "x": 12,
+        "y": 8
+      },
+      "id": 425,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (env) ((((sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])))) + ((sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range]))))) or ((sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (env) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])))) or ((sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range])))))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{env}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by Environment",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Claude and Codex input, output, and cache tokens by model.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 1,
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 7,
+        "x": 17,
+        "y": 8
+      },
+      "id": 426,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "expr": "sum by (model_short) (((sum by (model_short) (label_replace((sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range]))), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))) + (sum by (model_short) (label_replace((sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range]))), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\")))) or (sum by (model_short) (label_replace((sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (model) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range]))), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))) or (sum by (model_short) (label_replace((sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (model) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range]))), \"model_short\", \"$1\", \"model\", \"([^@]*?)(?:-[0-9]{8})?(?:@.*)?\"))))",
+          "format": "time_series",
+          "instant": true,
+          "legendFormat": "{{model_short}}",
+          "queryType": "instant",
+          "refId": "A"
+        }
+      ],
+      "title": "Tokens by Model",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Codex-reported usage cost per conversation and model, with token-priced API-equivalent estimates when reported cost is missing or any turn reports zero. Includes headless review workers (codex_exec). Estimates use the hidden pricing variables and are not subscription invoices.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "decimals": 2,
+          "unit": "currencyUSD"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 424,
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "sort": "desc",
+        "tooltip": {
+          "hideZeros": true,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.0.1",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "P8E80F9AEF21F6940"
+          },
+          "editorMode": "code",
+          "expr": "sum by (project) (label_replace((sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cost_usd [$__range]))), \"cost_source\", \"claude\", \"project\", \".*\") or label_replace((sum by (project) ((((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.turn_cost\" | unwrap usage_estimated_usd [$__range])) > 0) unless on (conversation_id, model, project, env) (sum by (conversation_id, model, project, env) (count_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.turn_cost\" | usage_estimated_usd <= 0 [$__range])))) or on (conversation_id, model, project, env) (((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap input_token_count [$__range])) * ($codex_sol_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap cached_token_count [$__range])) * (($codex_sol_cached_input_rate) - ($codex_sol_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap cache_write_token_count [$__range])) * ($codex_sol_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-sol\" | unwrap output_token_count [$__range])) * ($codex_sol_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap input_token_count [$__range])) * ($codex_terra_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap cached_token_count [$__range])) * (($codex_terra_cached_input_rate) - ($codex_terra_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap cache_write_token_count [$__range])) * ($codex_terra_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-terra\" | unwrap output_token_count [$__range])) * ($codex_terra_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap input_token_count [$__range])) * ($codex_luna_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap cached_token_count [$__range])) * (($codex_luna_cached_input_rate) - ($codex_luna_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap cache_write_token_count [$__range])) * ($codex_luna_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-luna\" | unwrap output_token_count [$__range])) * ($codex_luna_output_rate)) / 1000000) or ((sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap input_token_count [$__range])) * ($codex_astra_input_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap cached_token_count [$__range])) * (($codex_astra_cached_input_rate) - ($codex_astra_input_rate)) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap cache_write_token_count [$__range])) * ($codex_astra_cache_write_rate) + sum by (conversation_id, model, project, env) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | label_format env=`{{ if .sandbox_source }}sb-{{ .sandbox_profile }}{{ else }}local{{ end }}` | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | model=~\".*-astra\" | unwrap output_token_count [$__range])) * ($codex_astra_output_rate)) / 1000000))))), \"cost_source\", \"codex\", \"project\", \".*\"))",
+          "instant": true,
+          "legendFormat": "{{project}}",
+          "queryType": "instant",
+          "range": false,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost by Project",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "Claude and Codex input, output, and cache tokens by project.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -784,7 +926,7 @@
       "gridPos": {
         "h": 8,
         "w": 12,
-        "x": 8,
+        "x": 12,
         "y": 16
       },
       "id": 423,
@@ -819,7 +961,7 @@
             "type": "loki",
             "uid": "P8E80F9AEF21F6940"
           },
-          "expr": "sum by (project) (label_replace((sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap input_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap output_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cache_read_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | event_name=\"api_request\" | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap cache_creation_tokens [$__range]))), \"cost_target\", \"A\", \"project\", \".*\") or label_replace((sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | unwrap tool_token_count [$__range]))), \"cost_target\", \"B\", \"project\", \".*\"))",
+          "expr": "sum by (project) ((((sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])))) + ((sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range]))))) or ((sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap input_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap output_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_read_tokens [$__range])) + sum by (project) (sum_over_time({service_name=\"claude-code\"} | session_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"api_request\" | unwrap cache_creation_tokens [$__range])))) or ((sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap input_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cached_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap cache_write_token_count [$__range])) + sum by (project) (sum_over_time({service_name=~\"(codex_cli_rs|codex-app-server|codex_exec)\"} | conversation_id=~\"$session_id\" | project=~\"$project\" | host_name=~\"$host_name\" | label_format env_selected=`{{ if .sandbox_profile }}{{ if eq .sandbox_profile \"personal\" }}$env_sb_personal{{ else if eq .sandbox_profile \"work\" }}$env_sb_work{{ else }}0{{ end }}{{ else }}$env_local{{ end }}` | env_selected=\"1\" | event_name=\"codex.sse_event\" | event_kind=\"response.completed\" | unwrap output_token_count [$__range])))))",
           "format": "time_series",
           "instant": true,
           "legendFormat": "{{project}}",
