@@ -1,0 +1,644 @@
+{
+  "title": "Unified — Sessions",
+  "uid": "claude-sessions",
+  "timezone": "browser",
+  "refresh": "10s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "host_name",
+        "label": "Host",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values({__name__=~\"claude_code_cost_usage_USD_total|codex_turn_token_usage_sum\"}, host_name)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "multi": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "project",
+        "label": "Project (cwd)",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "label_values({__name__=~\"claude_code_cost_usage_USD_total|codex_turn_token_usage_sum\"}, project)",
+        "refresh": 2,
+        "sort": 1,
+        "includeAll": true,
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "multi": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "sb-personal",
+        "name": "env_sb_personal",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "sb-work",
+        "name": "env_sb_work",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "current": {
+          "text": "1",
+          "value": "1"
+        },
+        "hide": 0,
+        "label": "local",
+        "name": "env_local",
+        "options": [
+          {
+            "selected": true,
+            "text": "1",
+            "value": "1"
+          },
+          {
+            "selected": false,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "switch"
+      },
+      {
+        "name": "session_id",
+        "label": "Session ID",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "PBFA97CFB590B2093"
+        },
+        "query": "query_result(label_replace(codex_conversation_event_count{project=~\"$project\",host_name=~\"$host_name\"}, \"session_id\", \"$1\", \"conversation_id\", \"(.+)\") or claude_code_cost_usage_USD_total{project=~\"$project\",host_name=~\"$host_name\"})",
+        "refresh": 2,
+        "sort": 2,
+        "regex": "/session_id=\"([^\"]+)\"/",
+        "regexApplyTo": "value",
+        "includeAll": true,
+        "allValue": ".*",
+        "allowCustomValue": true,
+        "multi": true,
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "title": "Permission Required",
+      "type": "stat",
+      "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "noValue": "0"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "($env_sb_personal * (count(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or vector(0)) + $env_sb_work * (count(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or vector(0)) + $env_local * (count(claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or vector(0)) + $env_sb_personal * (count(codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or vector(0)) + $env_sb_work * (count(codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or vector(0)) + $env_local * (count(codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or vector(0))) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Working",
+      "type": "stat",
+      "id": 2,
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "blue",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "noValue": "0"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "($env_sb_personal * (count((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0)) or vector(0)) + $env_sb_work * (count((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0)) or vector(0)) + $env_local * (count((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0)) or vector(0)) + $env_sb_personal * (count((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0)) or vector(0)) + $env_sb_work * (count((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0)) or vector(0)) + $env_local * (count((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0)) or vector(0))) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Ready",
+      "type": "stat",
+      "id": 3,
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "noValue": "0"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "($env_sb_personal * (count((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0)) or vector(0)) + $env_sb_work * (count((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0)) or vector(0)) + $env_local * (count((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0)) or vector(0)) + $env_sb_personal * (count((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0)) or vector(0)) + $env_sb_work * (count((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0)) or vector(0)) + $env_local * (count((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) unless (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0)) or vector(0))) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Total Active",
+      "type": "stat",
+      "id": 4,
+      "gridPos": {
+        "x": 18,
+        "y": 0,
+        "w": 6,
+        "h": 4
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        },
+        "noValue": "0"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "($env_sb_personal * (count((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0)) or vector(0)) + $env_sb_work * (count((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0)) or vector(0)) + $env_local * (count((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or (claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or (codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0)) or vector(0))) or vector(0)",
+          "instant": true,
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Session State History",
+      "type": "state-timeline",
+      "id": 5,
+      "gridPos": {
+        "x": 0,
+        "y": 4,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "lineWidth": 0,
+            "fillOpacity": 70,
+            "spanNulls": false
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "blue",
+                "value": 2
+              },
+              {
+                "color": "orange",
+                "value": 3
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Ready",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Working",
+                  "color": "blue",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Permission Required",
+                  "color": "orange",
+                  "index": 2
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "mergeValues": true,
+        "showValue": "auto",
+        "alignValue": "left",
+        "rowHeight": 0.9,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} * 0 + 3) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} * 0 + 3) or ((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 2) or ((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 2) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} * 0 + 1) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} * 0 + 1)) and on() (vector($env_sb_personal) > 0)\nor\n((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} * 0 + 3) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} * 0 + 3) or ((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 2) or ((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 2) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} * 0 + 1) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} * 0 + 1)) and on() (vector($env_sb_work) > 0)\nor\n((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} * 0 + 3) or (codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} * 0 + 3) or ((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 2) or ((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 2) or (claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} * 0 + 1) or (codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} * 0 + 1)) and on() (vector($env_local) > 0)",
+          "legendFormat": "{{session_id}} · {{project}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Current Sessions",
+      "type": "table",
+      "id": 6,
+      "gridPos": {
+        "x": 0,
+        "y": 12,
+        "w": 24,
+        "h": 8
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              },
+              {
+                "color": "blue",
+                "value": 2
+              },
+              {
+                "color": "orange",
+                "value": 3
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "Ready",
+                  "color": "green",
+                  "index": 0
+                },
+                "2": {
+                  "text": "Working",
+                  "color": "blue",
+                  "index": 1
+                },
+                "3": {
+                  "text": "Permission Required",
+                  "color": "orange",
+                  "index": 2
+                }
+              }
+            }
+          ],
+          "custom": {
+            "displayMode": "color-background"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "State"
+              },
+              {
+                "id": "custom.width",
+                "value": 180
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "project"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_openshell_name"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sandbox_source"
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom.viz",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "displayName": "State",
+            "desc": true
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PBFA97CFB590B2093"
+          },
+          "expr": "((((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 3) * $env_sb_personal) > 0)\nor\n((((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 3) * $env_sb_work) > 0)\nor\n((((claude_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 3) * $env_local) > 0)\nor\n((((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 2) * $env_sb_personal) > 0)\nor\n((((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 2) * $env_sb_work) > 0)\nor\n((((claude_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 2) * $env_local) > 0)\nor\n((((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 1) * $env_sb_personal) > 0)\nor\n((((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 1) * $env_sb_work) > 0)\nor\n((((claude_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 1) * $env_local) > 0)\nor\n((((codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 3) * $env_sb_personal) > 0)\nor\n((((codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 3) * $env_sb_work) > 0)\nor\n((((codex_session_permission{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 3) * $env_local) > 0)\nor\n((((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 2) * $env_sb_personal) > 0)\nor\n((((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 2) * $env_sb_work) > 0)\nor\n((((codex_session_working{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 2) * $env_local) > 0)\nor\n((((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"personal\"} > 0) * 0 + 1) * $env_sb_personal) > 0)\nor\n((((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"work\"} > 0) * 0 + 1) * $env_sb_work) > 0)\nor\n((((codex_session_ready{project=~\"$project\", host_name=~\"$host_name\", session_id=~\"$session_id\", sandbox_profile=\"\"} > 0) * 0 + 1) * $env_local) > 0)",
+          "instant": true,
+          "format": "table",
+          "refId": "A"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true
+            },
+            "indexByName": {
+              "Value": 4,
+              "host_name": 2,
+              "location": 0,
+              "sandbox_profile": 3,
+              "session_id": 1
+            },
+            "renameByName": {}
+          }
+        }
+      ]
+    }
+  ]
+}
