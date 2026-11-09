@@ -172,15 +172,13 @@ http://localhost:3000 — no login required.
 Dashboards sync automatically — a sidecar container pushes JSON files to Grafana on startup and keeps them in sync bidirectionally. Edit a dashboard in the Grafana UI and the JSON file updates on disk. Edit the JSON file and Grafana picks up the change. No manual import needed.
 
 Available dashboards in `dashboards/`:
-- **`grafana-dashboard-all-in-one.json`** — All-in-one Claude Code dashboard, mirrored for Codex as the shared daily-driver layout. Codex skill panes remain placeholders until Codex skill telemetry is reworked.
-- **`grafana-dashboard-codex.json`** — Codex-specific OTEL overview (tool calls, WebSocket requests, tokens, timing, prompts, events, and tool results)
-- `grafana-dashboard-unified.json` — Unified dashboard (cost, tokens, skills, tools, traces, prompt history, and API requests; filterable by project and session)
-- `grafana-dashboard-projections.json` — Projections and usage trends
+- `grafana-dashboard-unified-all-in-one.json` — Unified Claude/Codex overview: session state, cost, tokens, and per-model/project/environment breakdowns
+- `grafana-dashboard-unified-sessions.json` — Unified Claude/Codex session state: counts, state history, current sessions
+- `grafana-dashboard-projections.json` — Claude Code projections and usage trends
+- `grafana-dashboard-unified-projections.json` — Unified Claude/Codex cost and token projections
 - `grafana-dashboard-prompts.json` — Prompt history and prompt analytics
-- `grafana-dashboard-quota.json` — Quota and usage information
-- `grafana-dashboard-sessions.json` — Session monitoring and session detail
-
-The all-in-one layout is shared across harnesses where the underlying signals are compatible. Codex skill panels are intentionally placeholders; Codex does not yet provide the same skill telemetry as Claude Code. Traces are optional and are not required for the Codex dashboards.
+- `grafana-dashboard-host-process-overview.json` — Host process consumption across process groups
+- `grafana-dashboard-host-process-explorer.json` — Host process groups filtered by a `groupname` regex
 
 ## Export sandbox Codex sessions
 
