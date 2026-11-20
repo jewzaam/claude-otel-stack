@@ -21,7 +21,7 @@ Codex (native OTEL) ───┴→ OTLP :4317/:4318 → OTEL Collector → Prom
 | Path | Purpose |
 |------|---------|
 | `docker-compose.yml` | All 5 services with `:z` SELinux bind mounts |
-| `bin/claude` | PATH shim — sets host OTEL env vars (skipped when `/sandbox/.env` exists, so a sandbox keeps its own endpoint, protocol and attributes), tags `-p`/`--print` runs, execs `$CLAUDE_CMD` (default `/usr/bin/claude`; `bin/codex` likewise with `$CODEX_CMD`), an absolute path so a shim never execs itself. Also staged into the openshell-sandbox image as `/sandbox/bin/claude` |
+| `bin/claude` | Host PATH shim — sets OTEL env vars, tags `-p`/`--print` runs, execs `$CLAUDE_CMD` (default `/usr/bin/claude`; `bin/codex` likewise with `$CODEX_CMD`), an absolute path so a shim never execs itself. |
 | `bin/dashboard-sync.py` | Bidirectional sync between dashboard JSON files and Grafana API |
 | `systemd/claude-otel-stack.service` | systemd user unit for autostart |
 | `config/otel-collector-config.yaml` | OTLP receiver → prometheus + loki + tempo exporters |
@@ -50,7 +50,7 @@ Codex exports structured logs and metrics. Its trace exporter is not required fo
 
 - Codex native OTEL is user-level configuration in `~/.codex/config.toml`. Do not edit `~/.codex/` from this repo.
 - Hook authority lives in the public [`jewzaam/my-codex-stuff`](https://github.com/jewzaam/my-codex-stuff) repository. Deploy `codex/hooks.json` and `codex/observe-hook.py` from that repository with its `make reconcile`; do not add or maintain a second hook implementation here. This repository owns the collector, recording rules, and dashboards that consume the hook telemetry. The observer emits raw `hook_event_name` and `observed_timestamp`; session state is derived downstream.
-- `bin/codex` (PATH shim, also staged into the sandbox image) pins `CODEX_PROJECT` at launch so the project remains stable across `/cd`. An inherited `project` in `OTEL_RESOURCE_ATTRIBUTES` (sandbox `/sandbox/.env`, or a parent codex) wins and sets `CODEX_PROJECT`; otherwise the launch directory is used and appended as `project`.
+- `bin/codex` (host PATH shim) pins `CODEX_PROJECT` to the launch directory so the project remains stable across `/cd`, replacing any inherited `project` in `OTEL_RESOURCE_ATTRIBUTES`.
 - Inherit the standard `OTEL_EXPORTER_OTLP_ENDPOINT` from the environment. Do not introduce a second endpoint variable for Codex.
 - Codex 0.162.1's managed app-server daemon shares the environment captured at daemon startup across separate clients. A correct per-client `OTEL_RESOURCE_ATTRIBUTES.project` printed by `bin/codex` does not guarantee that tool commands or native telemetry use it. They can retain the daemon's startup project. The `bin/codex` shim passes `--no-daemon` for per-project environment isolation. This bypasses an already-running daemon. `codex features disable daemon_auto_start` prevents automatic daemon startup, but does not bypass a daemon that is already running.
 - **The observer passes `OTEL_RESOURCE_ATTRIBUTES` through verbatim** onto the
@@ -101,12 +101,12 @@ Sandbox sessions connect to static IPs directly (e.g., `172.30.0.10:4318`). Acce
 - **Prefer Loki for cost and token panels** — `increase(claude_code_cost_usage_USD_total[$__range])` produces oscillating values that mismatch Claude Code's statusline (sparse counter increments + extrapolation at series boundaries + ephemeral `session_id` label dimension). `sum_over_time({service_name="claude-code"} | event_name="api_request" | unwrap cost_usd [...])` is exact per-event sum with no extrapolation. Same applies to all 4 token types (`input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`).
 - **Prometheus for numbers** — cost, tokens, active time come as proper metrics. Use Prometheus for numeric aggregation, Loki for counting and filtering events.
 - **`:z` on all bind mounts** — required for rootless podman on SELinux (Fedora).
-- **`project` label** — `$(pwd)` at launch for host sessions; sandbox sessions use the sandbox's host-side directory, injected as `SANDBOX_HOST_DIR` (in-container `$(pwd)` is `/sandbox/source/` for every sandbox). Only available on sessions launched via the wrapper.
+- **`project` label** — `$(pwd)` at launch for host sessions; sandbox sessions use the sandbox's host-side directory, injected as `SANDBOX_HOST_DIR` (in-container `$(pwd)` is `/sandbox/source/` for every sandbox). Only available on sessions launched by the sandbox launcher.
 - **Dashboard sync is bidirectional** — edits in Grafana UI write back to JSON files on disk within 10s via the dashboard-sync sidecar. Dashboards must NOT be provisioned (provisioned = read-only in Grafana, breaks bidirectional sync). No manual import needed. Adding a new UID→filename mapping in `dashboard-sync.py` requires restarting the container (`podman-compose restart dashboard-sync`); existing dashboard edits sync without restart.
 - **`host.name` is always the machine, never the sandbox.** Host sessions get
   `$(hostname)` from `bin/claude`. Sandbox sessions get the *creating host's*
-  hostname, injected as `SANDBOX_HOST_NAME` into `/sandbox/.env` by
-  `openshell-sandbox`, because in-container `hostname` is `sandbox-sb-<hash>` —
+  hostname, injected as `SANDBOX_HOST_NAME` into `/sandbox/.env` by the
+  sandbox launcher, because in-container `hostname` is `sandbox-sb-<hash>` —
   the sandbox, not the machine. Sandbox identity lives in `sandbox_source`.
   **Use `sandbox_source` presence, never a `host_name` pattern or a `project`
   path, to tell sandbox from local.** Dashboards used `host_name=~"sandbox-.*"`
@@ -292,8 +292,7 @@ with `>`. Each carries the label list **four times** — `max by (...)` and
 returns no series instead of erroring. After editing, run each `expr` against
 Loki directly and check the series count is non-zero.
 
-`headless` is a self-made resource attribute: `bin/claude` (this repo, and
-`/sandbox/bin/claude` in the sandbox image) appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
+`headless` is a self-made resource attribute: `bin/claude` appends `headless=true` to `OTEL_RESOURCE_ATTRIBUTES` for
 `-p`/`--print` runs. Claude Code emits no native headless marker (verified
 through 2.1.233 — `query_source` is version-unstable: 2.1.226 interactive
 main-thread requests emitted `repl_main_thread`, 2.1.233 emits `sdk`,

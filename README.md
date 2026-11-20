@@ -180,7 +180,7 @@ Available dashboards in `dashboards/`:
 - `grafana-dashboard-host-process-overview.json` — Host process consumption across process groups
 - `grafana-dashboard-host-process-explorer.json` — Host process groups filtered by a `groupname` regex
 
-## Export sandbox Codex sessions
+## Export sessions
 
 Export retained telemetry as portable session JSON, ready to upload:
 

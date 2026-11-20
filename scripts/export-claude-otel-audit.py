@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Export Claude Code session usage from Loki as portable session JSON.
 
-This pull-based export works after an ephemeral sandbox has been reaped and
+This pull-based export works after a session's runtime has been reaped and
 includes sessions which have not stopped.  It uses api_request log records,
 which carry exact per-request token values, rather than Prometheus counters.
 """

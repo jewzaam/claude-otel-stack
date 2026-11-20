@@ -3,7 +3,7 @@
 #
 # Self-check for bin/claude and bin/codex against stub native CLIs named by
 # CLAUDE_CMD/CODEX_CMD: passthrough of args, stdin and exit status, no
-# recursion, headless tagging, and which environment wins on host vs sandbox.
+# recursion, headless tagging, and project identity.
 
 set -u
 
@@ -39,25 +39,11 @@ EOF
 done
 export CLAUDE_CMD="$TMP/native/claude" CODEX_CMD="$TMP/native/codex"
 
-# Host and sandbox layouts: the same shims, with bin/claude's /sandbox/.env
-# check pointed at a file that is absent (host) or present (sandbox), so the
-# result does not depend on where this test runs.
-touch "$TMP/sandbox.env"
-for layout in host sandbox; do
-    mkdir -p "$TMP/$layout-bin"
-done
-sed "s|/sandbox/\.env|$TMP/absent.env|g" "$REPO_ROOT/bin/claude" > "$TMP/host-bin/claude"
-sed "s|/sandbox/\.env|$TMP/sandbox.env|g" "$REPO_ROOT/bin/claude" > "$TMP/sandbox-bin/claude"
-sed "s|/sandbox/\.env|$TMP/absent.env|g" "$REPO_ROOT/bin/codex" > "$TMP/host-bin/codex"
-sed "s|/sandbox/\.env|$TMP/sandbox.env|g" "$REPO_ROOT/bin/codex" > "$TMP/sandbox-bin/codex"
-chmod +x "$TMP/host-bin/claude" "$TMP/sandbox-bin/claude" "$TMP/host-bin/codex" "$TMP/sandbox-bin/codex"
-
 # A symlink to the wrapper earlier on PATH than the wrapper itself.
 mkdir -p "$TMP/link"
 ln -s "$REPO_ROOT/bin/claude" "$TMP/link/claude"
 
-HOST_PATH="$TMP/host-bin:/usr/bin:/bin"
-SANDBOX_PATH="$TMP/sandbox-bin:/usr/bin:/bin"
+HOST_PATH="$REPO_ROOT/bin:/usr/bin:/bin"
 
 # timeout turns a recursion into a failure instead of a hang.
 run() {  # run <PATH> <cmd> [args...]
@@ -118,10 +104,7 @@ check "claude: drive-letter CLAUDE_CMD accepted as absolute" 1 "$?"
 CODEX_CMD='C:\no\such\codex' run "$HOST_PATH" codex 2>&1 | grep -q 'must be an absolute path'
 check "codex: drive-letter CODEX_CMD accepted as absolute" 1 "$?"
 
-# --- claude: host sets telemetry, sandbox keeps what it inherited ----------
-check "test setup: sandbox check rewritten in host copy" 1 \
-    "$(grep -c "! -f $TMP/absent.env" "$TMP/host-bin/claude")"
-
+# --- claude: telemetry env and headless tagging -----------------------------
 out="$(OTEL_EXPORTER_OTLP_ENDPOINT=http://inherited:4318 run "$HOST_PATH" claude)"
 check "claude host: inherited endpoint kept" \
     "endpoint=http://inherited:4318" "$(grep '^endpoint=' <<< "$out")"
@@ -142,23 +125,11 @@ check "claude host: fresh launch gets launch dir and base attrs" \
     "environment=dev,project=$TMP" \
     "$(grep '^attrs=' <<< "$out" | grep -oE "environment=[^,]*|project=[^,]*" | paste -sd, -)"
 
-out="$(OTEL_EXPORTER_OTLP_ENDPOINT=http://inherited:4318 \
-    OTEL_RESOURCE_ATTRIBUTES="project=/sb,sandbox.profile=home" \
-    run "$SANDBOX_PATH" claude --print hi)"
-check "claude sandbox: inherited endpoint kept" \
-    "endpoint=http://inherited:4318" "$(grep '^endpoint=' <<< "$out")"
-check "claude sandbox: inherited attrs kept, headless appended" \
-    "attrs=project=/sb,sandbox.profile=home,headless=true" "$(grep '^attrs=' <<< "$out")"
+out="$(OTEL_RESOURCE_ATTRIBUTES="project=/sb,headless=true" run "$HOST_PATH" claude -p hi)"
+check "claude: headless not duplicated when already present" \
+    "1" "$(grep -o 'headless=true' <<< "$out" | wc -l | tr -d ' ')"
 
-out="$(OTEL_RESOURCE_ATTRIBUTES="project=/sb,headless=true" run "$SANDBOX_PATH" claude -p hi)"
-check "claude: headless not duplicated for nested run" \
-    "attrs=project=/sb,headless=true" "$(grep '^attrs=' <<< "$out")"
-
-out="$(env -u OTEL_RESOURCE_ATTRIBUTES PATH="$SANDBOX_PATH" timeout 5 claude -p < /dev/null)"
-check "claude sandbox: stripped nested run gets no project, no leading comma" \
-    "attrs=headless=true" "$(grep '^attrs=' <<< "$out")"
-
-# --- codex: host uses launch dir, sandbox keeps inherited project ---------
+# --- codex: launch directory wins over an inherited project ---------------
 out="$(cd "$TMP" && env -u CODEX_PROJECT -u OTEL_RESOURCE_ATTRIBUTES \
     PATH="$HOST_PATH" timeout 5 codex < /dev/null)"
 check "codex: CODEX_PROJECT is launch dir" "codex_project=$TMP" "$(grep '^codex_project=' <<< "$out")"
@@ -171,16 +142,9 @@ check "codex host: inherited project replaced with launch dir" \
 check "codex host: other inherited attrs preserved" \
     "attrs=host.name=h,project=$TMP" "$(grep '^attrs=' <<< "$out")"
 
-out="$(cd "$TMP" && env -u CODEX_PROJECT OTEL_RESOURCE_ATTRIBUTES="project=/sb,host.name=h" \
-    PATH="$SANDBOX_PATH" timeout 5 codex < /dev/null)"
-check "codex sandbox: existing project preserved" \
-    "attrs=project=/sb,host.name=h" "$(grep '^attrs=' <<< "$out")"
-check "codex sandbox: CODEX_PROJECT follows inherited project" \
-    "codex_project=/sb" "$(grep '^codex_project=' <<< "$out")"
-
-out="$(cd "$TMP" && env -u CODEX_PROJECT OTEL_RESOURCE_ATTRIBUTES="sandbox.project=x" \
-    PATH="$SANDBOX_PATH" timeout 5 codex < /dev/null)"
+out="$(cd "$TMP" && env -u CODEX_PROJECT OTEL_RESOURCE_ATTRIBUTES="not.project=x" \
+    PATH="$HOST_PATH" timeout 5 codex < /dev/null)"
 check "codex: a key merely ending in project= does not count" \
-    "attrs=sandbox.project=x,project=$TMP" "$(grep '^attrs=' <<< "$out")"
+    "attrs=not.project=x,project=$TMP" "$(grep '^attrs=' <<< "$out")"
 
 exit "$fail"
