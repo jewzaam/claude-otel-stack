@@ -341,7 +341,7 @@ groups:
       # priority rather than recency. That is the failure described under
       # "Compare on session_id, never on the full label set", reached from the
       # other direction. `project` is the stable path label: pinned at launch
-      # from CODEX_PROJECT or, in a sandbox, from /sandbox/.env. A bare `codex`
+      # from CODEX_PROJECT, which the launcher exports. A bare `codex`
       # with no wrapper has neither, so its `project` follows `/cd` and splits
       # the same way — resolve `codex` through bin/codex on PATH.
       # READY: SessionStart, Stop, or SessionEnd is the newest event.

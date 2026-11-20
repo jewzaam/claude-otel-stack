@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Export Codex session activity from Loki as portable session JSON.
 
-Designed for ephemeral OpenShell sandboxes. Sessions are rebuilt from durable
-hook logs, so neither SessionEnd nor Stop is required. Native Codex token
+Designed for runtimes that may be reaped before a session ends. Sessions are
+rebuilt from durable hook logs, so neither SessionEnd nor Stop is required. Native Codex token
 metrics omit session_id, therefore per-session token fields stay unavailable
 rather than being wrongly assigned when sessions overlap.
 """
